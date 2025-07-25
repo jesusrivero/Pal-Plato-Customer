@@ -14,6 +14,8 @@ object AppRoutes {
 	@Serializable
 	data object MenuScreen
 	
+	@Serializable
+	data object CreateBussinessScreen
 	
 //	@Serializable
 //	data object TutorialScreen

@@ -18,8 +18,10 @@ kotlinSerializationJson = "1.8.0"
 ui = "1.8.3"
 uiToolingPreview = "1.8.3"
 navigationComposeJvmstubs = "2.9.2"
+materialIconsExtended = "1.7.8"
 
 [libraries]
+androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 core-ktx-v1131 = { module = "androidx.core:core-ktx", version.ref = "androidxCoreKtx" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinSerializationJson" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }

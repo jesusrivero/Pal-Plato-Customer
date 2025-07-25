@@ -5,6 +5,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.techcode.palplato.presentation.navegation.AppRoutes.RegisterScreen
+import com.techcode.palplato.presentation.ui.CreateBussinessScreen
 import com.techcode.palplato.presentation.ui.auth.LoginScreen
 import com.techcode.palplato.presentation.ui.auth.RegisterScreen
 import com.techcode.palplato.presentation.ui.order.OrderScreen
@@ -18,7 +19,7 @@ fun NavegationHost(){
 	
 	val navController = rememberNavController()
 	
-	NavHost(navController = navController, startDestination = AppRoutes.LoginScreen) {
+	NavHost(navController = navController, startDestination = AppRoutes.CreateBussinessScreen) {
 		
 		composable<AppRoutes.MainScreen> {
 			MainScreen(navController = navController)
@@ -46,6 +47,10 @@ fun NavegationHost(){
 		
 		composable<AppRoutes.RegisterScreen> {
 			RegisterScreen(navController = navController)
+		}
+		
+		composable<AppRoutes.CreateBussinessScreen> {
+			CreateBussinessScreen(navController = navController)
 		}
 	}
 }

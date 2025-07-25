@@ -53,6 +53,7 @@ dependencies {
 	implementation(libs.androidx.navigation.compose)
 	implementation(libs.kotlinx.serialization.json)
 	implementation(libs.core.ktx.v1131)
+	implementation (libs.androidx.material.icons.extended)       // Icons extended
 	
 	//DEFAULT
 	implementation(libs.androidx.core.ktx)
