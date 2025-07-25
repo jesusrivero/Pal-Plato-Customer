@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "347599519685",
+    "project_id": "pal-plato",
+    "storage_bucket": "pal-plato.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:347599519685:android:e6210d5180a742f5c615ac",
+        "android_client_info": {
+          "package_name": "com.techcode.palplato"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBQqmEwEoTblKRQ5hcIEtewyijH_YRKlH4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
