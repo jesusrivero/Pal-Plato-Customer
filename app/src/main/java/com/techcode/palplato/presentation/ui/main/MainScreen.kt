@@ -81,11 +81,6 @@ fun MainScreenContent(navController: NavController) {
 		},
 		bottomBar = {
 			BottomNavigationBar(navController)
-		},
-		floatingActionButton = {
-			FloatingActionButton(onClick = { /* Agregar nuevo */ }) {
-				Icon(Icons.Default.Add, contentDescription = "Agregar")
-			}
 		}
 	) { innerPadding ->
 		Column(
@@ -94,8 +89,8 @@ fun MainScreenContent(navController: NavController) {
 				.padding(16.dp)
 				.verticalScroll(rememberScrollState())
 		) {
-			Text("Hola, Jesús", style = MaterialTheme.typography.headlineSmall)
-			Text("Pa'l Plato", style = MaterialTheme.typography.bodyMedium)
+//			Text("Hola, Jesús", style = MaterialTheme.typography.headlineSmall)
+//			Text("Pa'l Plato", style = MaterialTheme.typography.bodyMedium)
 			
 			Spacer(Modifier.height(16.dp))
 			
@@ -126,18 +121,15 @@ fun StatsGrid() {
 				title = "Pedidos de hoy",
 				value = "24",
 				iconRes = com.techcode.palplato.R.drawable.ic_orders,
-				modifier = Modifier
-					.weight(1.2f) // más grande
+				modifier = Modifier.weight(1f)
 			)
 			StatCard(
 				title = "Menús activos",
 				value = "8",
 				iconRes = com.techcode.palplato.R.drawable.ic_menu,
-				modifier = Modifier
-					.weight(0.8f)
+				modifier = Modifier.weight(1f)
 			)
 		}
-		
 		Row(
 			modifier = Modifier.fillMaxWidth(),
 			horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -146,15 +138,13 @@ fun StatsGrid() {
 				title = "Ingresos del día",
 				value = "$1.250",
 				iconRes = com.techcode.palplato.R.drawable.ic_menu,
-				modifier = Modifier
-					.weight(1.2f)
+				modifier = Modifier.weight(1f)
 			)
 			StatCard(
 				title = "Pedidos pendientes",
 				value = "5",
 				iconRes = com.techcode.palplato.R.drawable.ic_menu,
-				modifier = Modifier
-					.weight(0.8f)
+				modifier = Modifier.weight(1f)
 			)
 		}
 	}
@@ -170,7 +160,7 @@ fun StatCard(
 	modifier: Modifier = Modifier
 ) {
 	Surface(
-		modifier = modifier.aspectRatio(1.6f), // Respeta el tamaño desde afuera
+		modifier = modifier.aspectRatio(1.6f),
 		shape = RoundedCornerShape(16.dp),
 		tonalElevation = 1.dp,
 		color = MaterialTheme.colorScheme.surface
@@ -196,13 +186,14 @@ fun StatCard(
 
 
 
+
 @Composable
 fun QuickAccessGrid() {
 	val items = listOf(
 		Triple("Ver menús", Icons.Default.List, {}),
 		Triple("Agregar menú", Icons.Default.Add, {}),
 		Triple("Ver pedidos", Icons.Default.Receipt, {}),
-		Triple("Reportes", Icons.Default.BarChart, {})
+		Triple("Ver Reportes", Icons.Default.BarChart, {})
 	)
 	
 	Row(
@@ -232,7 +223,11 @@ fun QuickAccessGrid() {
 fun RecentActivityList() {
 	val activities = listOf(
 		Triple("Laura", "Ensalada César", "11:30"),
-		Triple("Mateo", "Pescado al ajillo", "11:00")
+		Triple("Mateo", "Pescado al ajillo", "11:00"),
+		Triple("Sofía", "Tacos de pollo", "10:45"),
+		Triple("Carlos", "Pizza Margarita", "10:30"),
+		Triple("Ana", "Sopa de verduras", "10:15"),
+		
 	)
 	
 	Column {
