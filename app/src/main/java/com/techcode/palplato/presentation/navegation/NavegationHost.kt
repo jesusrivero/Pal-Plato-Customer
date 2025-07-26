@@ -1,11 +1,12 @@
 package com.techcode.palplato.presentation.navegation
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.techcode.palplato.presentation.navegation.AppRoutes.RegisterScreen
-import com.techcode.palplato.presentation.ui.CreateBussinessScreen
+import com.techcode.palplato.presentation.ui.bussines.CreateBussinessScreen
 import com.techcode.palplato.presentation.ui.auth.LoginScreen
 import com.techcode.palplato.presentation.ui.auth.RegisterScreen
 import com.techcode.palplato.presentation.ui.order.OrderScreen
@@ -14,12 +15,13 @@ import com.techcode.palplato.presentation.ui.main.MainScreen
 import com.techcode.palplato.presentation.ui.menu.MenuScreen
 import com.techcode.palplato.presentation.ui.settings.SettingsScreen
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NavegationHost(){
 	
 	val navController = rememberNavController()
 	
-	NavHost(navController = navController, startDestination = AppRoutes.CreateBussinessScreen) {
+	NavHost(navController = navController, startDestination = AppRoutes.MainScreen) {
 		
 		composable<AppRoutes.MainScreen> {
 			MainScreen(navController = navController)

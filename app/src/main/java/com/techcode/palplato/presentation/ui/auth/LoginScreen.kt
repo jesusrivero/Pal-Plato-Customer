@@ -42,13 +42,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.techcode.palplato.R
 import com.techcode.palplato.presentation.navegation.AppRoutes
-import com.techcode.palplato.presentation.ui.commons.BottomNavigationBar
+
 
 
 
@@ -71,7 +69,7 @@ fun LoginScreenContent(navController: NavController) {
 	val isPasswordValid = password.length >= 6
 	
 	val emailError = email.isNotEmpty() && !isEmailValid
-	val passwordError = password.isNotEmpty() && !isPasswordValid
+//	val passwordError = password.isNotEmpty() && !isPasswordValid
 	var passwordVisible by rememberSaveable { mutableStateOf(false) }
 	val formIsValid = isEmailValid && isPasswordValid
 	
@@ -194,11 +192,11 @@ fun LoginScreenContent(navController: NavController) {
 	}
 }
 
-
-@Preview(showBackground = true)
-@Composable
-fun LoginScreenPreview() {
-	
-	val navController = rememberNavController()
-	LoginScreenContent(navController = navController)
-}
+//
+//@Preview(showBackground = true)
+//@Composable
+//fun LoginScreenPreview() {
+//
+//	val navController = rememberNavController()
+//	LoginScreenContent(navController = navController)
+//}

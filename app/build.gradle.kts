@@ -54,7 +54,8 @@ dependencies {
 	implementation(libs.kotlinx.serialization.json)
 	implementation(libs.core.ktx.v1131)
 	implementation (libs.androidx.material.icons.extended)       // Icons extended
-	
+	implementation(libs.material)
+	implementation(libs.datetime)
 	//DEFAULT
 	implementation(libs.androidx.core.ktx)
 	implementation(libs.androidx.lifecycle.runtime.ktx)

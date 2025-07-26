@@ -1,7 +1,6 @@
 package com.techcode.palplato.presentation.ui.auth
 
 import android.util.Patterns
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -46,12 +45,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.techcode.palplato.R
 import com.techcode.palplato.presentation.navegation.AppRoutes
 
 @Composable
@@ -64,7 +60,7 @@ fun RegisterScreen(navController: NavController) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreenContent(navController: NavController) {
-	var step by remember { mutableStateOf(1) }
+//	var step by remember { mutableStateOf(1) }
 	
 	var name by remember { mutableStateOf("") }
 	var lastName by remember { mutableStateOf("") }
@@ -94,7 +90,7 @@ fun RegisterScreenContent(navController: NavController) {
 				actions = {
 					IconButton(onClick = { }) {
 						Icon(
-							painter = painterResource(id = R.drawable.ic_supports),
+							painter = painterResource(id = com.techcode.palplato.R.drawable.ic_supports),
 							contentDescription = "Soporte",
 							modifier = Modifier.size(25.dp)
 						)
@@ -282,10 +278,10 @@ fun RegisterScreenContent(navController: NavController) {
 }
 
 
-@Preview(showBackground = true)
-@Composable
-fun RegisterScreenPreview() {
-	
-	val navController = rememberNavController()
-	RegisterScreenContent(navController = navController)
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun RegisterScreenPreview() {
+//
+//	val navController = rememberNavController()
+//	RegisterScreenContent(navController = navController)
+//}
