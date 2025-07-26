@@ -43,6 +43,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.techcode.palplato.presentation.navegation.AppRoutes
 import com.techcode.palplato.presentation.ui.commons.BottomNavigationBar
 
 @Composable
@@ -88,7 +89,7 @@ fun MenuScreenContent(navController: NavController) {
 		floatingActionButton = {
 			FloatingActionButton(
 				shape = CircleShape,
-				onClick = { },
+				onClick = { navController.navigate(AppRoutes.CreateMenuScreen) },
 				containerColor = Color.Black,
 				contentColor = Color.White
 			) {
@@ -186,4 +187,53 @@ data class MenuItem(
 //
 //	val navController = rememberNavController()
 //	MenuScreenContent(navController = navController)
+//}
+
+
+//
+//@OptIn(ExperimentalMaterial3Api::class)
+//@Composable
+//fun OrderDetailsScreenContent(navController: NavController) {
+//
+//
+//
+//
+//	Scaffold(
+//		topBar = {
+//			CenterAlignedTopAppBar(
+//				title = {
+//					Text(
+//						text = "Reportes",
+//						style = MaterialTheme.typography.titleMedium
+//					)
+//				},
+//				actions = {
+//					IconButton(onClick = { /* Acción de notificaciones */ }) {
+//						Icon(
+//							painter = painterResource(id = R.drawable.ic_notification), // ← Asegúrate de tener este ícono
+//							contentDescription = "Notificaciones", modifier = Modifier.size(25.dp)
+//						)
+//					}
+//				}
+//			)
+//		},
+//		bottomBar = {
+//			BottomNavigationBar(navController = navController)
+//		}
+//	) { innerPadding ->
+//		Column(
+//			modifier = Modifier
+//				.padding(innerPadding)
+//				.padding(16.dp)
+//		) {
+//
+//
+//
+//
+//
+//
+//		}
+//	}
+//
+//
 //}

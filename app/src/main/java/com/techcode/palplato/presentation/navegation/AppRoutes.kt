@@ -31,6 +31,14 @@ object AppRoutes {
 	
 	@Serializable
 	data object RegisterScreen
+	
+	@Serializable
+	data object OrderDetailsScreen
+	
+	@Serializable
+	data object CreateMenuScreen
+	
+	
 //
 //	@Serializable
 //	data object LoginScreen

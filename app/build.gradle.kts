@@ -56,6 +56,8 @@ dependencies {
 	implementation (libs.androidx.material.icons.extended)       // Icons extended
 	implementation(libs.material)
 	implementation(libs.datetime)
+	implementation(libs.coil.compose)
+	
 	//DEFAULT
 	implementation(libs.androidx.core.ktx)
 	implementation(libs.androidx.lifecycle.runtime.ktx)

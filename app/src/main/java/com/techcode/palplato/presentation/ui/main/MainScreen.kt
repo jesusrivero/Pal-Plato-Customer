@@ -40,6 +40,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.techcode.palplato.presentation.navegation.AppRoutes
 import com.techcode.palplato.presentation.ui.commons.BottomNavigationBar
 
 
@@ -100,7 +101,7 @@ fun MainScreenContent(navController: NavController) {
 			Spacer(Modifier.height(24.dp))
 			
 			Text("Accesos rápidos", style = MaterialTheme.typography.titleMedium)
-			QuickAccessGrid()
+			QuickAccessGrid(navController)
 			
 			Spacer(Modifier.height(24.dp))
 			
@@ -188,7 +189,7 @@ fun StatCard(
 
 
 @Composable
-fun QuickAccessGrid() {
+fun QuickAccessGrid(navController: NavController) {
 	val items = listOf(
 		Triple("Ver menús", Icons.Default.List, {}),
 		Triple("Agregar menú", Icons.Default.Add, {}),

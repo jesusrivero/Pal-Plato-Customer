@@ -12,7 +12,9 @@ import com.techcode.palplato.presentation.ui.auth.RegisterScreen
 import com.techcode.palplato.presentation.ui.order.OrderScreen
 import com.techcode.palplato.presentation.ui.reports.ReporstScreen
 import com.techcode.palplato.presentation.ui.main.MainScreen
+import com.techcode.palplato.presentation.ui.menu.CreateMenuScreen
 import com.techcode.palplato.presentation.ui.menu.MenuScreen
+import com.techcode.palplato.presentation.ui.order.OrderDetailsScreen
 import com.techcode.palplato.presentation.ui.settings.SettingsScreen
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -53,6 +55,14 @@ fun NavegationHost(){
 		
 		composable<AppRoutes.CreateBussinessScreen> {
 			CreateBussinessScreen(navController = navController)
+		}
+		
+		composable<AppRoutes.OrderDetailsScreen> {
+			OrderDetailsScreen(navController = navController)
+		}
+		
+		composable<AppRoutes.CreateMenuScreen> {
+			CreateMenuScreen(navController = navController)
 		}
 	}
 }

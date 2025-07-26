@@ -1,8 +1,10 @@
 package com.techcode.palplato.presentation.ui.order
 
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +21,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -44,6 +49,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.techcode.palplato.R
+import com.techcode.palplato.presentation.navegation.AppRoutes
 import com.techcode.palplato.presentation.ui.commons.BottomNavigationBar
 
 @Composable
@@ -57,30 +63,20 @@ fun OrderScreen(	navController: NavController){
 @Composable
 fun OrderScreenContent(navController: NavController) {
 	val pedidos = listOf(
-		Pedido("Sofía", "Hamburguesa Clásica", R.drawable.ic_hamburguesa),
-		Pedido("Alejandro", "Pizza Margarita", R.drawable.ic_hamburguesa),
-		Pedido("Isabella", "Tacos al Pastor", R.drawable.ic_hamburguesa),
-		Pedido("Gabriel", "Sushi Variado", R.drawable.ic_hamburguesa),
-		Pedido("Valentina", "Ensalada César", R.drawable.ic_hamburguesa),
-		Pedido("Sebastián", "Pasta Carbonara", R.drawable.ic_hamburguesa)
+		Pedido("Alejandro", "#1234", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		Pedido("Sofía", "#5678", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		Pedido("Ricardo", "#9012", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		Pedido("Isabella", "#3456", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		Pedido("Gabriel", "#7890", com.techcode.palplato.R.drawable.ic_hamburguesa)
 	)
 	
 	Scaffold(
 		topBar = {
 			CenterAlignedTopAppBar(
-				title = {
-					Text(
-						text = "Pedidos",
-						style = MaterialTheme.typography.titleMedium
-					)
-				},
-				actions = {
-					IconButton(onClick = { /* Acción de notificaciones */ }) {
-						Icon(
-							painter = painterResource(id = R.drawable.ic_notification),
-							contentDescription = "Notificaciones",
-							modifier = Modifier.size(25.dp)
-						)
+				title = { Text("Pedidos", style = MaterialTheme.typography.titleMedium) },
+				navigationIcon = {
+					IconButton(onClick = { navController.popBackStack() }) {
+						Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
 					}
 				}
 			)
@@ -95,65 +91,50 @@ fun OrderScreenContent(navController: NavController) {
 				.padding(horizontal = 16.dp, vertical = 8.dp)
 		) {
 			items(pedidos) { pedido ->
-				PedidoItem(pedido)
+				PedidoItem(pedido) {
+			navController.navigate(AppRoutes.OrderDetailsScreen)
+				}
 				Spacer(modifier = Modifier.height(12.dp))
 			}
 		}
 	}
 }
 
+
 @Composable
-fun PedidoItem(pedido: Pedido) {
-	Card(
+fun PedidoItem(pedido: Pedido, onClick: () -> Unit) {
+	Row(
 		modifier = Modifier
-			.fillMaxWidth(),
-		shape = RoundedCornerShape(16.dp),
-		colors = CardDefaults.cardColors(containerColor = Color.White),
-		elevation = CardDefaults.cardElevation(4.dp)
+			.fillMaxWidth()
+			.clip(RoundedCornerShape(16.dp))
+			.clickable { onClick() }
+			.padding(8.dp),
+		verticalAlignment = Alignment.CenterVertically
 	) {
-		Row(
+		Image(
+			painter = painterResource(id = pedido.imagen),
+			contentDescription = "Avatar del cliente",
 			modifier = Modifier
-				.padding(12.dp)
-				.fillMaxWidth(),
-			verticalAlignment = Alignment.CenterVertically
+				.size(48.dp)
+				.clip(CircleShape)
+		)
+		
+		Spacer(modifier = Modifier.width(12.dp))
+		
+		Column(
+			modifier = Modifier
+				.weight(1f)
 		) {
-			Image(
-				painter = painterResource(id = pedido.imagen),
-				contentDescription = "Foto del pedido",
-				modifier = Modifier
-					.size(56.dp)
-					.clip(RoundedCornerShape(12.dp))
+			Text(
+				text = "Cliente: ${pedido.cliente}",
+				fontWeight = FontWeight.SemiBold,
+				style = MaterialTheme.typography.bodyMedium
 			)
-			
-			Spacer(modifier = Modifier.width(12.dp))
-			
-			Column(modifier = Modifier.weight(1f)) {
-				Text("Cliente: ${pedido.cliente}", fontWeight = FontWeight.Bold)
-				Text(pedido.detalle, color = Color.Gray)
-			}
-			
-			Spacer(modifier = Modifier.width(12.dp))
-			
-			Column(
-				verticalArrangement = Arrangement.spacedBy(4.dp)
-			) {
-				Button(
-					onClick = { /* Aceptar */ },
-					colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
-					contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
-					modifier = Modifier.defaultMinSize(minHeight = 30.dp)
-				) {
-					Text("Aceptar", fontSize = 12.sp)
-				}
-				Button(
-					onClick = { /* Rechazar */ },
-					colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF44336)),
-					contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
-					modifier = Modifier.defaultMinSize(minHeight = 30.dp)
-				) {
-					Text("Rechazar", fontSize = 12.sp)
-				}
-			}
+			Text(
+				text = "Pedido ${pedido.detalle}",
+				color = Color.Gray,
+				style = MaterialTheme.typography.bodySmall
+			)
 		}
 	}
 }
@@ -163,6 +144,8 @@ data class Pedido(
 	val detalle: String,
 	@DrawableRes val imagen: Int
 )
+
+
 
 
 @Preview(showBackground = true)
