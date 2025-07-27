@@ -4,27 +4,37 @@ import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,27 +45,30 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.techcode.palplato.R
 import com.techcode.palplato.presentation.navegation.AppRoutes
-import com.techcode.palplato.presentation.ui.commons.BottomNavigationBar
 
 @Composable
-fun SettingsScreen(	navController: NavController){
+fun EditedSecurityScreen(	navController: NavController){
 	
-	SettingsScreenContent(navController = navController,)
+	EditedSecurityScreenContent(navController = navController,)
 	
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreenContent(navController: NavController) {
+fun EditedSecurityScreenContent(navController: NavController) {
+	
+	var isTwoStepEnabled by rememberSaveable { mutableStateOf(false) }
+	
 	Scaffold(
 		topBar = {
 			CenterAlignedTopAppBar(
-				title = {
-					Text(
-						text = "Ajustes",
-						style = MaterialTheme.typography.titleMedium
-					)
-				},actions = {
+				title = { Text("Seguridad", style = MaterialTheme.typography.titleMedium) },
+				navigationIcon = {
+					IconButton(onClick = { navController.popBackStack() }) {
+						Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+					}
+				},
+				actions = {
 					IconButton(onClick = { /* Acción de notificaciones */ }) {
 						Icon(
 							painter = painterResource(id = R.drawable.ic_notification),
@@ -65,83 +78,85 @@ fun SettingsScreenContent(navController: NavController) {
 					}
 				}
 			)
-		},
-		bottomBar = {
-			BottomNavigationBar(navController = navController)
 		}
 	) { innerPadding ->
 		
-		// Declaramos los items dentro del body
-		val items = listOf(
-			SettingsItem(
-				title = "Perfil",
-				subtitle = "Cambia tu nombre, correo y teléfono",
-				iconRes = R.drawable.ic_person
-			) {
-				navController.navigate(AppRoutes.EditedProfileScreen)
-			},
-			SettingsItem(
-				title = "Negocio",
-				subtitle = "Actualiza el nombre, tipo de comida y dirección de tu negocio",
-				iconRes = R.drawable.ic_bussines
-			) {
-				navController.navigate(AppRoutes.EditedBussinessScreen)
-			},
-			SettingsItem(
-				title = "Seguridad",
-				subtitle = "Cambia tu contraseña y activa la verificación en dos pasos",
-				iconRes = R.drawable.ic_secutiry
-			) {
-				navController.navigate(AppRoutes.EditedSecurityScreen)
-			},
-			SettingsItem(
-				title = "Notificaciones",
-				subtitle = "Configura las notificaciones push y elige cuáles recibir",
-				iconRes = R.drawable.ic_notification
-			) {
-				navController.navigate(AppRoutes.EditedNotificationPreferencesScreen)
-			}
+		val profileOptions = listOf(
+			SecurityItem(
+				title = "Contraseña",
+				subtitle = "Edita tu contraseña",
+				iconRes = R.drawable.ic_person,
+				onClick = { navController.navigate(AppRoutes.EditedPasswordScreen) }
+			)
 		)
 		
-		Column(
+		LazyColumn(
 			modifier = Modifier
+				.fillMaxSize()
 				.padding(innerPadding)
-				.padding(horizontal = 16.dp, vertical = 8.dp)
+				.padding(horizontal = 16.dp, vertical = 8.dp),
+			verticalArrangement = Arrangement.spacedBy(12.dp)
 		) {
-			items.forEach { item ->
-				SettingOption(
+			items(profileOptions) { item ->
+				SecutiryOption(
 					icon = item.iconRes,
 					title = item.title,
 					subtitle = item.subtitle,
 					onClick = item.onClick
 				)
-				Spacer(modifier = Modifier.height(8.dp))
 			}
 			
-			// Opción Cerrar sesión
-			Divider(modifier = Modifier.padding(vertical = 8.dp))
-			SettingOption(
-				icon = R.drawable.ic_logout,
-				title = "Cerrar sesión",
-				subtitle = "",
-				onClick = {
-					// Acción para cerrar sesión
+			item {
+				Row(
+					modifier = Modifier
+						.fillMaxWidth()
+						.clip(RoundedCornerShape(16.dp))
+						.padding(vertical = 12.dp, horizontal = 8.dp),
+					verticalAlignment = Alignment.CenterVertically
+				) {
+					Icon(
+						painter = painterResource(id = R.drawable.ic_secutiry), // Usa un ícono adecuado
+						contentDescription = "Verificación en dos pasos",
+						tint = colorScheme.onSurfaceVariant,
+						modifier = Modifier
+							.size(40.dp)
+							.background(
+								color = colorScheme.surfaceVariant,
+								shape = RoundedCornerShape(12.dp)
+							)
+							.padding(8.dp)
+					)
+					
+					Spacer(modifier = Modifier.width(16.dp))
+					
+					Column(modifier = Modifier.weight(1f)) {
+						Text("Verificación en dos pasos", style = MaterialTheme.typography.bodyLarge)
+						Text(
+							"Requiere autenticación adicional al iniciar sesión.",
+							style = MaterialTheme.typography.bodySmall,
+							color = colorScheme.onSurfaceVariant
+						)
+					}
+					
+					Switch(
+						checked = isTwoStepEnabled,
+						colors = SwitchDefaults.colors(
+							checkedThumbColor = colorScheme.primary,
+							uncheckedThumbColor = colorScheme.outline,
+							checkedTrackColor = colorScheme.primary.copy(alpha = 0.54f),
+							uncheckedTrackColor = colorScheme.surfaceVariant
+						),
+						onCheckedChange = { isTwoStepEnabled = it }
+					)
 				}
-			)
+			}
 		}
 	}
 }
 
-// Data class para manejar cada ítem
-data class SettingsItem(
-	val title: String,
-	val subtitle: String,
-	val iconRes: Int,
-	val onClick: () -> Unit
-)
 
 @Composable
-fun SettingOption(
+fun SecutiryOption(
 	icon: Int,
 	title: String,
 	subtitle: String,
@@ -194,11 +209,18 @@ fun SettingOption(
 }
 
 
+data class SecurityItem(
+	val title: String,
+	val subtitle: String,
+	val iconRes: Int,
+	val onClick: () -> Unit
+)
+
 
 @Preview(showBackground = true)
 @Composable
-fun SettingsScreenPreview() {
+fun EditedSecurityScreenPreview() {
 	
 	val navController = rememberNavController()
-	SettingsScreenContent(navController = navController)
+	EditedSecurityScreenContent(navController = navController)
 }

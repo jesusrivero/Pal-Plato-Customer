@@ -4,16 +4,22 @@ import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Divider
@@ -38,24 +44,26 @@ import com.techcode.palplato.presentation.navegation.AppRoutes
 import com.techcode.palplato.presentation.ui.commons.BottomNavigationBar
 
 @Composable
-fun SettingsScreen(	navController: NavController){
+fun EditedProfileScreen(	navController: NavController){
 	
-	SettingsScreenContent(navController = navController,)
+	EditedProfileScreenContent(navController = navController,)
 	
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreenContent(navController: NavController) {
+fun EditedProfileScreenContent(navController: NavController) {
+	
 	Scaffold(
 		topBar = {
 			CenterAlignedTopAppBar(
-				title = {
-					Text(
-						text = "Ajustes",
-						style = MaterialTheme.typography.titleMedium
-					)
-				},actions = {
+				title = { Text("Perfil", style = MaterialTheme.typography.titleMedium) },
+				navigationIcon = {
+					IconButton(onClick = { navController.popBackStack() }) {
+						Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+					}
+				},
+				actions = {
 					IconButton(onClick = { /* Acción de notificaciones */ }) {
 						Icon(
 							painter = painterResource(id = R.drawable.ic_notification),
@@ -65,83 +73,53 @@ fun SettingsScreenContent(navController: NavController) {
 					}
 				}
 			)
-		},
-		bottomBar = {
-			BottomNavigationBar(navController = navController)
 		}
 	) { innerPadding ->
 		
-		// Declaramos los items dentro del body
-		val items = listOf(
-			SettingsItem(
-				title = "Perfil",
-				subtitle = "Cambia tu nombre, correo y teléfono",
-				iconRes = R.drawable.ic_person
-			) {
-				navController.navigate(AppRoutes.EditedProfileScreen)
-			},
-			SettingsItem(
-				title = "Negocio",
-				subtitle = "Actualiza el nombre, tipo de comida y dirección de tu negocio",
-				iconRes = R.drawable.ic_bussines
-			) {
-				navController.navigate(AppRoutes.EditedBussinessScreen)
-			},
-			SettingsItem(
-				title = "Seguridad",
-				subtitle = "Cambia tu contraseña y activa la verificación en dos pasos",
-				iconRes = R.drawable.ic_secutiry
-			) {
-				navController.navigate(AppRoutes.EditedSecurityScreen)
-			},
-			SettingsItem(
-				title = "Notificaciones",
-				subtitle = "Configura las notificaciones push y elige cuáles recibir",
-				iconRes = R.drawable.ic_notification
-			) {
-				navController.navigate(AppRoutes.EditedNotificationPreferencesScreen)
-			}
+		// Declaramos los datos dentro del body del Scaffold
+		val profileOptions = listOf(
+			ProfileItem(
+				title = "Nombre completo",
+				subtitle = "Editar tu nombre completo",
+				iconRes = R.drawable.ic_person,
+				onClick = { navController.navigate(AppRoutes.EditedNameScreen) }
+			),
+			ProfileItem(
+				title = "Correo electrónico",
+				subtitle = "Editar tu correo",
+				iconRes = R.drawable.ic_person,
+				onClick = { navController.navigate(AppRoutes.EditedEmailScreen) }
+			),
+			ProfileItem(
+				title = "Número de teléfono",
+				subtitle = "Editar tu número",
+				iconRes = R.drawable.ic_person,
+				onClick = {navController.navigate(AppRoutes.EditedPhoneScreen) }
+			)
 		)
 		
-		Column(
+		LazyColumn(
 			modifier = Modifier
+				.fillMaxSize()
 				.padding(innerPadding)
-				.padding(horizontal = 16.dp, vertical = 8.dp)
+				.padding(horizontal = 16.dp, vertical = 8.dp),
+			verticalArrangement = Arrangement.spacedBy(12.dp)
 		) {
-			items.forEach { item ->
-				SettingOption(
+			items(profileOptions) { item ->
+				ProfileOption(
 					icon = item.iconRes,
 					title = item.title,
 					subtitle = item.subtitle,
 					onClick = item.onClick
 				)
-				Spacer(modifier = Modifier.height(8.dp))
 			}
-			
-			// Opción Cerrar sesión
-			Divider(modifier = Modifier.padding(vertical = 8.dp))
-			SettingOption(
-				icon = R.drawable.ic_logout,
-				title = "Cerrar sesión",
-				subtitle = "",
-				onClick = {
-					// Acción para cerrar sesión
-				}
-			)
 		}
 	}
 }
 
-// Data class para manejar cada ítem
-data class SettingsItem(
-	val title: String,
-	val subtitle: String,
-	val iconRes: Int,
-	val onClick: () -> Unit
-)
 
 @Composable
-fun SettingOption(
+fun ProfileOption(
 	icon: Int,
 	title: String,
 	subtitle: String,
@@ -194,11 +172,18 @@ fun SettingOption(
 }
 
 
+data class ProfileItem(
+	val title: String,
+	val subtitle: String,
+	val iconRes: Int,
+	val onClick: () -> Unit
+)
+
 
 @Preview(showBackground = true)
 @Composable
-fun SettingsScreenPreview() {
+fun EditedProfileScreenPreview() {
 	
 	val navController = rememberNavController()
-	SettingsScreenContent(navController = navController)
+	EditedProfileScreenContent(navController = navController)
 }

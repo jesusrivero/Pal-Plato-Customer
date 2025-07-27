@@ -67,7 +67,27 @@ fun OrderScreenContent(navController: NavController) {
 		Pedido("Sofía", "#5678", com.techcode.palplato.R.drawable.ic_hamburguesa),
 		Pedido("Ricardo", "#9012", com.techcode.palplato.R.drawable.ic_hamburguesa),
 		Pedido("Isabella", "#3456", com.techcode.palplato.R.drawable.ic_hamburguesa),
-		Pedido("Gabriel", "#7890", com.techcode.palplato.R.drawable.ic_hamburguesa)
+		Pedido("Gabriel", "#7890", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		Pedido("Alejandro", "#1234", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		Pedido("Sofía", "#5678", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		Pedido("Ricardo", "#9012", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		Pedido("Isabella", "#3456", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		Pedido("Gabriel", "#7890", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		Pedido("Alejandro", "#1234", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		Pedido("Sofía", "#5678", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		Pedido("Ricardo", "#9012", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		Pedido("Isabella", "#3456", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		Pedido("Gabriel", "#7890", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		Pedido("Alejandro", "#1234", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		Pedido("Sofía", "#5678", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		Pedido("Ricardo", "#9012", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		Pedido("Isabella", "#3456", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		Pedido("Gabriel", "#7890", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		Pedido("Alejandro", "#1234", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		Pedido("Sofía", "#5678", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		Pedido("Ricardo", "#9012", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		Pedido("Isabella", "#3456", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		Pedido("Gabriel", "#7890", com.techcode.palplato.R.drawable.ic_hamburguesa),
 	)
 	
 	Scaffold(
@@ -77,6 +97,14 @@ fun OrderScreenContent(navController: NavController) {
 				navigationIcon = {
 					IconButton(onClick = { navController.popBackStack() }) {
 						Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+					}
+				},actions = {
+					IconButton(onClick = { /* Acción de notificaciones */ }) {
+						Icon(
+							painter = painterResource(id = R.drawable.ic_notification),
+							contentDescription = "Notificaciones",
+							modifier = Modifier.size(25.dp)
+						)
 					}
 				}
 			)

@@ -9,12 +9,23 @@ import androidx.navigation.compose.rememberNavController
 import com.techcode.palplato.presentation.ui.bussines.CreateBussinessScreen
 import com.techcode.palplato.presentation.ui.auth.LoginScreen
 import com.techcode.palplato.presentation.ui.auth.RegisterScreen
+import com.techcode.palplato.presentation.ui.bussines.EditedBussinessScreen
+import com.techcode.palplato.presentation.ui.bussines.EditedDatesBussinessScreen
+import com.techcode.palplato.presentation.ui.bussines.EditedschedulesBusseinessScreen
 import com.techcode.palplato.presentation.ui.order.OrderScreen
 import com.techcode.palplato.presentation.ui.reports.ReporstScreen
 import com.techcode.palplato.presentation.ui.main.MainScreen
 import com.techcode.palplato.presentation.ui.menu.CreateMenuScreen
+import com.techcode.palplato.presentation.ui.menu.EditedMenuScreen
 import com.techcode.palplato.presentation.ui.menu.MenuScreen
 import com.techcode.palplato.presentation.ui.order.OrderDetailsScreen
+import com.techcode.palplato.presentation.ui.settings.EditedEmailScreen
+import com.techcode.palplato.presentation.ui.settings.EditedNameScreen
+import com.techcode.palplato.presentation.ui.settings.EditedNotificationPreferencesScreen
+import com.techcode.palplato.presentation.ui.settings.EditedPasswordScreen
+import com.techcode.palplato.presentation.ui.settings.EditedPhoneScreen
+import com.techcode.palplato.presentation.ui.settings.EditedProfileScreen
+import com.techcode.palplato.presentation.ui.settings.EditedSecurityScreen
 import com.techcode.palplato.presentation.ui.settings.SettingsScreen
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -64,5 +75,49 @@ fun NavegationHost(){
 		composable<AppRoutes.CreateMenuScreen> {
 			CreateMenuScreen(navController = navController)
 		}
+		
+		
+		composable<AppRoutes.EditedMenuScreen> {
+			EditedMenuScreen(navController = navController)
+		}
+		
+		composable<AppRoutes.EditedProfileScreen> {
+			EditedProfileScreen(navController = navController)
+		}
+		
+		composable<AppRoutes.EditedNameScreen> {
+			EditedNameScreen(navController = navController)
+		}
+		
+		composable<AppRoutes.EditedEmailScreen> {
+			EditedEmailScreen(navController = navController)
+		}
+		composable<AppRoutes.EditedPhoneScreen> {
+			EditedPhoneScreen(navController = navController)
+		}
+		
+		composable<AppRoutes.EditedBussinessScreen> {
+			EditedBussinessScreen(navController = navController)
+		}
+		
+		composable<AppRoutes.EditedDatesBussinessScreen> {
+			EditedDatesBussinessScreen(navController = navController)
+		}
+		
+		composable<AppRoutes.EditedSecurityScreen> {
+			EditedSecurityScreen(navController = navController)
+		}
+		
+		composable<AppRoutes.EditedPasswordScreen> {
+			EditedPasswordScreen(navController = navController)
+		}
+		
+		composable<AppRoutes.EditedNotificationPreferencesScreen> {
+			EditedNotificationPreferencesScreen(navController = navController)
+		}
+		composable<AppRoutes.EditedschedulesBusseinessScreen> {
+			EditedschedulesBusseinessScreen(navController = navController)
+		}
+		
 	}
 }

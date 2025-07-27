@@ -1,9 +1,10 @@
-package com.techcode.palplato.presentation.ui.settings
+package com.techcode.palplato.presentation.ui.bussines
 
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,7 +15,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Store
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -28,6 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -38,23 +43,27 @@ import com.techcode.palplato.presentation.navegation.AppRoutes
 import com.techcode.palplato.presentation.ui.commons.BottomNavigationBar
 
 @Composable
-fun SettingsScreen(	navController: NavController){
+fun EditedBussinessScreen(	navController: NavController){
 	
-	SettingsScreenContent(navController = navController,)
+	EditedBussinessScreenContent(navController = navController,)
 	
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreenContent(navController: NavController) {
+fun EditedBussinessScreenContent(navController: NavController) {
 	Scaffold(
 		topBar = {
 			CenterAlignedTopAppBar(
 				title = {
 					Text(
-						text = "Ajustes",
+						text = "Negocio",
 						style = MaterialTheme.typography.titleMedium
 					)
+				},navigationIcon = {
+					IconButton(onClick = { navController.popBackStack() }) {
+						Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+					}
 				},actions = {
 					IconButton(onClick = { /* Acción de notificaciones */ }) {
 						Icon(
@@ -65,41 +74,24 @@ fun SettingsScreenContent(navController: NavController) {
 					}
 				}
 			)
-		},
-		bottomBar = {
-			BottomNavigationBar(navController = navController)
 		}
 	) { innerPadding ->
 		
 		// Declaramos los items dentro del body
 		val items = listOf(
 			SettingsItem(
-				title = "Perfil",
-				subtitle = "Cambia tu nombre, correo y teléfono",
+				title = "Datos del negocio",
+				subtitle = "Actualiza el nombre, direccion y caterogias",
 				iconRes = R.drawable.ic_person
 			) {
-				navController.navigate(AppRoutes.EditedProfileScreen)
+				navController.navigate(AppRoutes.EditedDatesBussinessScreen)
 			},
 			SettingsItem(
-				title = "Negocio",
-				subtitle = "Actualiza el nombre, tipo de comida y dirección de tu negocio",
+				title = "Horarios",
+				subtitle = "Actualiza los horarios de atencion",
 				iconRes = R.drawable.ic_bussines
 			) {
-				navController.navigate(AppRoutes.EditedBussinessScreen)
-			},
-			SettingsItem(
-				title = "Seguridad",
-				subtitle = "Cambia tu contraseña y activa la verificación en dos pasos",
-				iconRes = R.drawable.ic_secutiry
-			) {
-				navController.navigate(AppRoutes.EditedSecurityScreen)
-			},
-			SettingsItem(
-				title = "Notificaciones",
-				subtitle = "Configura las notificaciones push y elige cuáles recibir",
-				iconRes = R.drawable.ic_notification
-			) {
-				navController.navigate(AppRoutes.EditedNotificationPreferencesScreen)
+				navController.navigate(AppRoutes.EditedschedulesBusseinessScreen)
 			}
 		)
 		
@@ -122,8 +114,8 @@ fun SettingsScreenContent(navController: NavController) {
 			Divider(modifier = Modifier.padding(vertical = 8.dp))
 			SettingOption(
 				icon = R.drawable.ic_logout,
-				title = "Cerrar sesión",
-				subtitle = "",
+				title = "Deshabilitar negocio",
+				subtitle = "Al realizar esta accion dejaras de ser visible",
 				onClick = {
 					// Acción para cerrar sesión
 				}
@@ -194,11 +186,10 @@ fun SettingOption(
 }
 
 
-
 @Preview(showBackground = true)
 @Composable
-fun SettingsScreenPreview() {
+fun EditedBussinessScreenPreview() {
 	
 	val navController = rememberNavController()
-	SettingsScreenContent(navController = navController)
+	EditedBussinessScreenContent(navController = navController)
 }

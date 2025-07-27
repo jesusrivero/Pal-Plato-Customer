@@ -1,6 +1,7 @@
 package com.techcode.palplato.presentation.ui.menu
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -62,11 +63,32 @@ fun MenuScreenContent(navController: NavController) {
 	val items = listOf(
 		MenuItem("Hamburguesa Clásica", "Carne, queso, lechuga, tomate", com.techcode.palplato.R.drawable.ic_hamburguesa),
 		MenuItem("Pizza Margarita", "Salsa de tomate, mozzarella, albahaca", com.techcode.palplato.R.drawable.ic_hamburguesa),
-		MenuItem("Refresco de Cola", "Bebida carbonatada",com.techcode.palplato.R.drawable.ic_hamburguesa),
+		MenuItem("Refresco de Cola", "Bebida carbonatada", com.techcode.palplato.R.drawable.ic_hamburguesa),
 		MenuItem("Pizza Margarita", "Salsa de tomate, mozzarella, albahaca", com.techcode.palplato.R.drawable.ic_hamburguesa),
-		MenuItem("Refresco de Cola", "Bebida carbonatada",com.techcode.palplato.R.drawable.ic_hamburguesa),
+		MenuItem("Refresco de Cola", "Bebida carbonatada", com.techcode.palplato.R.drawable.ic_hamburguesa),
 		MenuItem("Pizza Margarita", "Salsa de tomate, mozzarella, albahaca", com.techcode.palplato.R.drawable.ic_hamburguesa),
-		MenuItem("Refresco de Cola", "Bebida carbonatada",com.techcode.palplato.R.drawable.ic_hamburguesa)
+		MenuItem("Refresco de Cola", "Bebida carbonatada", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		MenuItem("Hamburguesa Clásica", "Carne, queso, lechuga, tomate", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		MenuItem("Pizza Margarita", "Salsa de tomate, mozzarella, albahaca", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		MenuItem("Refresco de Cola", "Bebida carbonatada", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		MenuItem("Pizza Margarita", "Salsa de tomate, mozzarella, albahaca", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		MenuItem("Refresco de Cola", "Bebida carbonatada", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		MenuItem("Pizza Margarita", "Salsa de tomate, mozzarella, albahaca", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		MenuItem("Refresco de Cola", "Bebida carbonatada", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		MenuItem("Hamburguesa Clásica", "Carne, queso, lechuga, tomate", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		MenuItem("Pizza Margarita", "Salsa de tomate, mozzarella, albahaca", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		MenuItem("Refresco de Cola", "Bebida carbonatada", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		MenuItem("Pizza Margarita", "Salsa de tomate, mozzarella, albahaca", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		MenuItem("Refresco de Cola", "Bebida carbonatada", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		MenuItem("Pizza Margarita", "Salsa de tomate, mozzarella, albahaca", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		MenuItem("Refresco de Cola", "Bebida carbonatada", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		MenuItem("Hamburguesa Clásica", "Carne, queso, lechuga, tomate", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		MenuItem("Pizza Margarita", "Salsa de tomate, mozzarella, albahaca", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		MenuItem("Refresco de Cola", "Bebida carbonatada", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		MenuItem("Pizza Margarita", "Salsa de tomate, mozzarella, albahaca", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		MenuItem("Refresco de Cola", "Bebida carbonatada", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		MenuItem("Pizza Margarita", "Salsa de tomate, mozzarella, albahaca", com.techcode.palplato.R.drawable.ic_hamburguesa),
+		MenuItem("Refresco de Cola", "Bebida carbonatada", com.techcode.palplato.R.drawable.ic_hamburguesa),
 	)
 	
 	Scaffold(
@@ -135,7 +157,9 @@ fun MenuScreenContent(navController: NavController) {
 				modifier = Modifier.fillMaxSize()
 			) {
 				items(items) { item ->
-					MenuCard(item)
+					MenuCard(item = item) {
+						navController.navigate(AppRoutes.EditedMenuScreen)
+					}
 				}
 			}
 		}
@@ -143,10 +167,11 @@ fun MenuScreenContent(navController: NavController) {
 }
 
 @Composable
-fun MenuCard(item: MenuItem) {
+fun MenuCard(item: MenuItem, onClick: () -> Unit) {
 	Column(
 		modifier = Modifier
 			.clip(RoundedCornerShape(12.dp))
+			.clickable { onClick() }
 	) {
 		Image(
 			painter = painterResource(id = item.imageRes),
@@ -179,6 +204,7 @@ data class MenuItem(
 	val description: String,
 	val imageRes: Int
 )
+
 
 
 //@Preview(showBackground = true)
