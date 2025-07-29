@@ -94,11 +94,7 @@ fun OrderScreenContent(navController: NavController) {
 		topBar = {
 			CenterAlignedTopAppBar(
 				title = { Text("Pedidos", style = MaterialTheme.typography.titleMedium) },
-				navigationIcon = {
-					IconButton(onClick = { navController.popBackStack() }) {
-						Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
-					}
-				},actions = {
+				actions = {
 					IconButton(onClick = { /* Acción de notificaciones */ }) {
 						Icon(
 							painter = painterResource(id = R.drawable.ic_notification),

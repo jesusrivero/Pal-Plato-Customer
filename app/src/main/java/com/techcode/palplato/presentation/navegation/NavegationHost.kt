@@ -8,7 +8,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.techcode.palplato.presentation.ui.bussines.CreateBussinessScreen
 import com.techcode.palplato.presentation.ui.auth.LoginScreen
+import com.techcode.palplato.presentation.ui.auth.RecoverPasswordScreen
 import com.techcode.palplato.presentation.ui.auth.RegisterScreen
+import com.techcode.palplato.presentation.ui.auth.SplashScreen
 import com.techcode.palplato.presentation.ui.bussines.EditedBussinessScreen
 import com.techcode.palplato.presentation.ui.bussines.EditedDatesBussinessScreen
 import com.techcode.palplato.presentation.ui.bussines.EditedschedulesBusseinessScreen
@@ -34,10 +36,14 @@ fun NavegationHost(){
 	
 	val navController = rememberNavController()
 	
-	NavHost(navController = navController, startDestination = AppRoutes.MainScreen) {
+	NavHost(navController = navController, startDestination = AppRoutes.SplashScreen) {
 		
 		composable<AppRoutes.MainScreen> {
 			MainScreen(navController = navController)
+		}
+		
+		composable<AppRoutes.SplashScreen> {
+			SplashScreen(navController = navController)
 		}
 		
 		composable<AppRoutes.MenuScreen> {
@@ -58,6 +64,10 @@ fun NavegationHost(){
 		
 		composable<AppRoutes.LoginScreen> {
 			LoginScreen(navController = navController)
+		}
+		
+		composable<AppRoutes.RecoverPasswordScreen> {
+			RecoverPasswordScreen(navController = navController)
 		}
 		
 		composable<AppRoutes.RegisterScreen> {

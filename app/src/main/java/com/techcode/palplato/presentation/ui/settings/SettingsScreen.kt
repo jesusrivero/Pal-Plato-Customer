@@ -1,5 +1,6 @@
 package com.techcode.palplato.presentation.ui.settings
 
+import android.util.Log
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -31,22 +32,25 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.techcode.palplato.R
+import com.techcode.palplato.domain.viewmodels.auth.AuthViewModel
 import com.techcode.palplato.presentation.navegation.AppRoutes
 import com.techcode.palplato.presentation.ui.commons.BottomNavigationBar
 
 @Composable
 fun SettingsScreen(	navController: NavController){
-	
 	SettingsScreenContent(navController = navController,)
 	
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreenContent(navController: NavController) {
+fun SettingsScreenContent(
+	navController: NavController,
+	viewModel: AuthViewModel = hiltViewModel()) {
 	Scaffold(
 		topBar = {
 			CenterAlignedTopAppBar(
@@ -125,7 +129,10 @@ fun SettingsScreenContent(navController: NavController) {
 				title = "Cerrar sesión",
 				subtitle = "",
 				onClick = {
-					// Acción para cerrar sesión
+					viewModel.logout()
+					navController.navigate(AppRoutes.LoginScreen) {
+						popUpTo(AppRoutes.SettingsScreen) { inclusive = true }
+					}
 				}
 			)
 		}

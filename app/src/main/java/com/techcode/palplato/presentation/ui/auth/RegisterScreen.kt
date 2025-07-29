@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -30,6 +31,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,8 +50,12 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.techcode.palplato.domain.model.User
+import com.techcode.palplato.domain.viewmodels.auth.AuthViewModel
 import com.techcode.palplato.presentation.navegation.AppRoutes
+import com.techcode.palplato.utils.Resource
 
 @Composable
 fun RegisterScreen(navController: NavController) {
@@ -59,16 +66,17 @@ fun RegisterScreen(navController: NavController) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegisterScreenContent(navController: NavController) {
-//	var step by remember { mutableStateOf(1) }
-	
+fun RegisterScreenContent(
+	navController: NavController,
+ ViewModel: AuthViewModel = hiltViewModel())
+{
 	var name by remember { mutableStateOf("") }
 	var lastName by remember { mutableStateOf("") }
 	var email by remember { mutableStateOf("") }
 	var password by remember { mutableStateOf("") }
 	var confirmPassword by remember { mutableStateOf("") }
 	var acceptedTerms by remember { mutableStateOf(false) }
-	
+	val registerState by ViewModel.registerState.collectAsState()
 	val uriHandler = LocalUriHandler.current
 	
 	// 🧠 Validaciones
@@ -245,12 +253,45 @@ fun RegisterScreenContent(navController: NavController) {
 				// Botón Crear Cuenta
 				Button(
 					onClick = {
-						navController.navigate(AppRoutes.CreateBussinessScreen)
+							val user = User(
+								uid = "", // se completará en Firebase
+								name = name.trim(),
+								lastname = lastName.trim(),
+								email = email.trim(),
+								rol = "owner",
+								state = "activo",
+								date = System.currentTimeMillis()
+							)
+							ViewModel.register(user, password.trim())
 					},
 					modifier = Modifier.fillMaxWidth(),
 					enabled = formIsValid
 				) {
 					Text("Crear Cuenta")
+				}
+				
+				when (registerState) {
+					is Resource.Loading -> {
+						CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+					}
+					is Resource.Success -> {
+						LaunchedEffect(Unit) {
+							navController.navigate(AppRoutes.CreateBussinessScreen) {
+								popUpTo(AppRoutes.RegisterScreen) { inclusive = true }
+							}
+							ViewModel.clearState()
+						}
+					}
+					is Resource.Error -> {
+						val errorMsg = (registerState as Resource.Error).message
+						Text(
+							text = errorMsg,
+							color = MaterialTheme.colorScheme.error,
+							style = MaterialTheme.typography.bodySmall,
+							modifier = Modifier.align(Alignment.CenterHorizontally)
+						)
+					}
+					null -> {}
 				}
 				
 				Spacer(modifier = Modifier.height(16.dp))

@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Store
+import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -112,14 +113,14 @@ fun EditedBussinessScreenContent(navController: NavController) {
 			
 			// Opción Cerrar sesión
 			Divider(modifier = Modifier.padding(vertical = 8.dp))
-			SettingOption(
-				icon = R.drawable.ic_logout,
-				title = "Deshabilitar negocio",
-				subtitle = "Al realizar esta accion dejaras de ser visible",
+			Button(
 				onClick = {
-					// Acción para cerrar sesión
-				}
-			)
+					// Aquí puedes validar los campos y realizar la operación
+				},
+				modifier = Modifier.fillMaxWidth()
+			) {
+				Text("Deshabilitar")
+			}
 		}
 	}
 }

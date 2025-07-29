@@ -1,6 +1,7 @@
 package com.techcode.palplato.presentation.ui.auth
 
 import android.util.Patterns
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -31,23 +32,27 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.techcode.palplato.R
+import com.techcode.palplato.domain.viewmodels.auth.AuthViewModel
 import com.techcode.palplato.presentation.navegation.AppRoutes
-
-
+import com.techcode.palplato.utils.Resource
 
 
 @Composable
@@ -59,19 +64,45 @@ fun LoginScreen(navController: NavController){
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreenContent(navController: NavController) {
+fun LoginScreenContent(
+	navController: NavController,
+  viewModel: AuthViewModel = hiltViewModel()
+	) {
 	var email by rememberSaveable { mutableStateOf("") }
 	var password by rememberSaveable { mutableStateOf("") }
 	var isLoading by rememberSaveable { mutableStateOf(false) }
-	
 	// Estados de error
 	val isEmailValid = Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches()
 	val isPasswordValid = password.length >= 6
-	
+	val context = LocalContext.current
 	val emailError = email.isNotEmpty() && !isEmailValid
-//	val passwordError = password.isNotEmpty() && !isPasswordValid
+  val passwordError = password.isNotEmpty() && !isPasswordValid
 	var passwordVisible by rememberSaveable { mutableStateOf(false) }
 	val formIsValid = isEmailValid && isPasswordValid
+	val loginState by viewModel.loginState.collectAsState()
+	
+	LaunchedEffect(loginState) {
+		when (loginState) {
+			is Resource.Loading -> {
+				isLoading = true
+			}
+			is Resource.Success -> {
+				isLoading = false
+				navController.navigate(AppRoutes.MainScreen) {
+					popUpTo(AppRoutes.LoginScreen) { inclusive = true }
+				}
+			}
+			is Resource.Error -> {
+				isLoading = false
+				(loginState as? Resource.Error)?.let { error ->
+					Toast.makeText(context, error.message, Toast.LENGTH_LONG).show()
+				}
+				viewModel.resetLoginState()
+			}
+			else -> Unit
+		}
+	}
+
 	
 	Scaffold(
 		topBar = {
@@ -148,13 +179,35 @@ fun LoginScreenContent(navController: NavController) {
 				},
 				keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
 			)
+			if (passwordError) {
+				Text(
+					text = "La contraseña debe tener al menos 6 caracteres",
+					color = MaterialTheme.colorScheme.error,
+					style = MaterialTheme.typography.bodySmall,
+					modifier = Modifier.align(Alignment.Start)
+				)
+			}
+			// Texto clicable para recuperación de contraseña
+			Text(
+				text = "¿Olvidaste tu contraseña?",
+				color = MaterialTheme.colorScheme.primary,
+				style = MaterialTheme.typography.bodyMedium,
+				modifier = Modifier
+					.align(Alignment.End)
+					.padding(top = 8.dp)
+					.clickable {
+						 navController.navigate(AppRoutes.RecoverPasswordScreen)
+					}
+			)
 			
 			Spacer(modifier = Modifier.height(24.dp))
 			
 			Button(
 				onClick = {
-					isLoading = true
-					// Aquí iría tu lógica de login real
+					viewModel.login(email.trim(), password.trim())
+				
+//					isLoading = true
+//					navController.navigate(AppRoutes.MainScreen)
 				},
 				modifier = Modifier
 					.fillMaxWidth()

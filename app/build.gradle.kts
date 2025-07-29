@@ -2,8 +2,11 @@ plugins {
 	alias(libs.plugins.android.application)
 	alias(libs.plugins.kotlin.android)
 	alias(libs.plugins.jetbrainsKotlinSerialization)
+	id("com.google.gms.google-services") // 🔥 Requerido para Firebase
 	id("org.jetbrains.kotlin.plugin.compose")
-	
+	id ("kotlin-kapt")
+	id ("dagger.hilt.android.plugin")
+
 }
 
 android {
@@ -37,6 +40,8 @@ android {
 		compose = true
 	}
 	
+
+	
 	composeOptions {
 		kotlinCompilerExtensionVersion = "1.5.13" // O la última versión estable
 	}
@@ -49,7 +54,7 @@ dependencies {
 	implementation(libs.ui)
 	implementation(libs.material3)
 	implementation(libs.ui.tooling.preview)
-// Navegación con Jetpack Compose
+	
 	implementation(libs.androidx.navigation.compose)
 	implementation(libs.kotlinx.serialization.json)
 	implementation(libs.core.ktx.v1131)
@@ -57,6 +62,20 @@ dependencies {
 	implementation(libs.material)
 	implementation(libs.datetime)
 	implementation(libs.coil.compose)
+	
+	implementation(libs.firebase.bom)
+	implementation (libs.firebase.auth.ktx)
+	implementation (libs.firebase.firestore.ktx)
+	
+	
+	implementation(libs.androidx.lifecycle.viewmodel.compose)
+	
+	// Hilt para ViewModel (incluye multibinding)
+	// Hilt
+	implementation(libs.hilt.android)
+	kapt(libs.androidx.hilt.compiler)
+	kapt (libs.dagger.hilt.compiler)
+	implementation(libs.androidx.hilt.navigation.compose)
 	
 	//DEFAULT
 	implementation(libs.androidx.core.ktx)

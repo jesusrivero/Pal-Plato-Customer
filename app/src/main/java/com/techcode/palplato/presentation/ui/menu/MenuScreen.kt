@@ -110,7 +110,6 @@ fun MenuScreenContent(navController: NavController) {
 		},
 		floatingActionButton = {
 			FloatingActionButton(
-				shape = CircleShape,
 				onClick = { navController.navigate(AppRoutes.CreateMenuScreen) },
 				containerColor = Color.Black,
 				contentColor = Color.White

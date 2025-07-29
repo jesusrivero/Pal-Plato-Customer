@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -74,11 +76,16 @@ fun EditedschedulesBusseinessScreenContent(navController: NavController) {
 		topBar = {
 			CenterAlignedTopAppBar(
 				title = { Text("Editar horarios", style = MaterialTheme.typography.titleMedium) },
+				navigationIcon = {
+					IconButton(onClick = { navController.popBackStack() }) {
+						Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+					}
+				},
 				actions = {
-					IconButton(onClick = { }) {
+					IconButton(onClick = { /* Acción de notificaciones */ }) {
 						Icon(
-							painter = painterResource(id = R.drawable.ic_supports),
-							contentDescription = "Soporte",
+							painter = painterResource(id = R.drawable.ic_notification),
+							contentDescription = "Notificaciones",
 							modifier = Modifier.size(25.dp)
 						)
 					}
