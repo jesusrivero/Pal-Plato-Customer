@@ -40,6 +40,7 @@ import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -185,6 +186,19 @@ fun EditedDatesBussinessScreenContent(navController: NavController) {
 			)
 		}
 	) { innerPadding ->
+		
+		if (businessData == null) {
+			// ⏳ Mostrar indicador de carga mientras se obtiene el negocio
+			Box(
+				modifier = Modifier
+					.fillMaxSize()
+					.padding(innerPadding),
+				contentAlignment = Alignment.Center
+			) {
+				CircularProgressIndicator()
+			}
+		} else {
+			// ✅ Mostrar contenido solo si los datos están listos
 		Column(
 			modifier = Modifier
 				.padding(innerPadding)
@@ -600,6 +614,7 @@ fun EditedDatesBussinessScreenContent(navController: NavController) {
 			}
 		}
 	}
+}
 }
 
 @Preview(showBackground = true)

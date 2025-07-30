@@ -3,6 +3,7 @@ package com.techcode.palplato.data.repository
 import com.google.firebase.firestore.FirebaseFirestore
 import com.techcode.palplato.domain.repository.BusinessRepository
 import com.techcode.palplato.domain.model.Business
+import com.techcode.palplato.domain.model.BusinessSchedule
 import com.techcode.palplato.utils.Resource
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -39,11 +40,23 @@ class BusinessRepositoryImpl @Inject constructor(
 			)
 		} ?: emptyList()
 		
+		// 🔥 Conversión manual de horarios (schedule)
+		val scheduleList = (snapshot["schedule"] as? List<Map<String, Any>>)?.map { scheduleMap ->
+			BusinessSchedule(
+				day = scheduleMap["day"] as? String ?: "",
+				openTime = scheduleMap["openTime"] as? String,
+				closeTime = scheduleMap["closeTime"] as? String,
+				isOpen = scheduleMap["isOpen"] as? Boolean ?: false // 👈 Se lee directamente de Firestore
+			)
+		} ?: emptyList()
+		
 		return rawBusiness.copy(
 			businessId = snapshot.id,
-			categories = categoriesList
+			categories = categoriesList,
+			schedule = scheduleList // 👈 Se reemplaza el schedule
 		)
 	}
+
 
 
 
