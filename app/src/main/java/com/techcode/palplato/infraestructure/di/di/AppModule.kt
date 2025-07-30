@@ -9,6 +9,8 @@ import com.techcode.palplato.domain.repository.BusinessRepository
 import com.techcode.palplato.domain.usecase.auth.LoginUseCase
 import com.techcode.palplato.domain.usecase.auth.RegisterUseCase
 import com.techcode.palplato.domain.usecase.auth.bussiness.CreateBusinessUseCase
+import com.techcode.palplato.domain.usecase.auth.bussiness.GetBusinessUseCase
+import com.techcode.palplato.domain.usecase.auth.bussiness.UpdateBusinessUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -60,5 +62,17 @@ object AppModule {
 	@Singleton
 	fun provideCreateBusinessUseCase(repository: BusinessRepository): CreateBusinessUseCase {
 		return CreateBusinessUseCase(repository)
+	}
+	
+	@Provides
+	@Singleton
+	fun provideUpdateBusinessUseCase(repository: BusinessRepository): UpdateBusinessUseCase {
+		return UpdateBusinessUseCase(repository)
+	}
+	
+	@Provides
+	@Singleton
+	fun provideGetBusinessUseCase(repository: BusinessRepository): GetBusinessUseCase {
+		return GetBusinessUseCase(repository)
 	}
 }

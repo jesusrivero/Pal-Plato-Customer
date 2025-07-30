@@ -6,55 +6,69 @@ import com.techcode.palplato.domain.model.Business
 import com.techcode.palplato.utils.Resource
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
+import com.techcode.palplato.domain.model.Category
 
 class BusinessRepositoryImpl @Inject constructor(
 	private val firestore: FirebaseFirestore
 ) : BusinessRepository {
 	
 	
-	override suspend fun createBusiness(business: Business): Resource<Unit> {
+	override suspend fun createBusiness(business: Business): String {
+		val docRef = firestore.collection("businesses").document()
+		val newBusiness = business.copy(businessId = docRef.id)
+		docRef.set(newBusiness).await()
+		return docRef.id // ✅ Retornamos el businessId
+	}
+	
+	
+	override suspend fun getBusinessById(businessId: String): Business? {
+		val snapshot = firestore.collection("businesses")
+			.document(businessId)
+			.get()
+			.await()
+		
+		if (!snapshot.exists()) return null
+		
+		val rawBusiness = snapshot.toObject(Business::class.java) ?: return null
+		
+		// 🔥 Conversión manual de categorías
+		val categoriesList = (snapshot["categories"] as? List<Map<String, Any>>)?.map { categoryMap ->
+			Category(
+				name = categoryMap["name"] as? String ?: "",
+				products = (categoryMap["products"] as? List<String>) ?: emptyList()
+			)
+		} ?: emptyList()
+		
+		return rawBusiness.copy(
+			businessId = snapshot.id,
+			categories = categoriesList
+		)
+	}
+
+
+
+//	override suspend fun getBusinessById(businessId: String): Business? {
+//		val snapshot = firestore.collection("businesses")
+//			.document(businessId)
+//			.get()
+//			.await()
+//		return snapshot.toObject(Business::class.java)?.copy(businessId = snapshot.id)
+//	}
+	
+	
+	override suspend fun updateBusinessFields(
+		businessId: String,
+		updates: Map<String, Any>
+	): Resource<Unit> {
 		return try {
-			val docRef = firestore.collection("businesses").document()
-			val businessWithId = business.copy(businessId = docRef.id)
-			docRef.set(businessWithId).await()
+			firestore.collection("businesses")
+				.document(businessId)
+				.update(updates)
+				.await()
 			Resource.Success(Unit)
 		} catch (e: Exception) {
-			Resource.Error(e.message ?: "Error al crear el negocio")
+			Resource.Error(e.message ?: "Error al actualizar el negocio")
 		}
 	}
 	
-//	private suspend fun uploadImageToStorage(imageUri: Uri, fileName: String): Resource<String> {
-//		return try {
-//			val storageRef = Firebase.storage.reference.child(fileName)
-//			storageRef.putFile(imageUri).await()
-//			val downloadUrl = storageRef.downloadUrl.await()
-//			Resource.Success(downloadUrl.toString())
-//		} catch (e: Exception) {
-//			Resource.Error(e.message ?: "Error al subir la imagen")
-//		}
-//	}
-
-
-//	override suspend fun createBusiness(business: Business): Resource<Unit> {
-//		return try {
-//			// 1️⃣ Crear referencia para el nuevo negocio
-//			val docRef = firestore.collection("businesses").document()
-//			val businessWithId = business.copy(businessId = docRef.id)
-//
-//			// 2️⃣ Ejecutar operaciones en batch (atómicas)
-//			firestore.runBatch { batch ->
-//				// Guardar el negocio
-//				batch.set(docRef, businessWithId)
-//
-//				// Actualizar el documento del dueño con el businessId
-//				val ownerRef = firestore.collection("users").document(business.ownerId)
-//				batch.update(ownerRef, "businessId", docRef.id)
-//			}.await()
-//
-//			Resource.Success(Unit)
-//		} catch (e: Exception) {
-//			Resource.Error(e.message ?: "Error al crear el negocio")
-//		}
-//	}
-
 }

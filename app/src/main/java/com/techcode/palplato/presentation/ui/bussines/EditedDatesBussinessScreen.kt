@@ -79,8 +79,8 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.techcode.palplato.R
+import com.techcode.palplato.domain.model.Category
 import com.techcode.palplato.domain.viewmodels.auth.BusinessViewModel
-import com.techcode.palplato.presentation.navegation.AppRoutes
 import com.techcode.palplato.utils.Resource
 
 
@@ -107,7 +107,7 @@ fun EditedDatesBussinessScreenContent(navController: NavController) {
 	fun getProductsForCategory(category: String): List<String> {
 		return categoryProductList.find { it.name == category }?.products ?: emptyList()
 	}
-	
+	var isInitialized by remember { mutableStateOf(false) }
 	var expanded by remember { mutableStateOf(false) }
 	var productInput by remember { mutableStateOf("") }
 	val selectedCategories = remember { mutableStateListOf<String>() }
@@ -115,7 +115,7 @@ fun EditedDatesBussinessScreenContent(navController: NavController) {
 	val viewModel: BusinessViewModel = hiltViewModel()
 	val businessState by viewModel.businessState.collectAsState()
 	val context = LocalContext.current
-	
+	val businessData by viewModel.businessData.collectAsState()
 	// Logo del negocio
 	var logoUri by remember { mutableStateOf<Uri?>(null) }
 	val imagePickerLauncher = rememberLauncherForActivityResult(
@@ -124,11 +124,36 @@ fun EditedDatesBussinessScreenContent(navController: NavController) {
 		logoUri = uri
 	}
 	
+	// Cargar datos al entrar en la pantalla
+	LaunchedEffect(Unit) {
+		viewModel.getBusinessData()
+	}
+
+// Solo rellenar una vez los campos con los datos del negocio
+	LaunchedEffect(businessData) {
+		val business = businessData
+		if (business != null && !isInitialized) {
+			businessName = business.name
+			businessPhone = business.phone
+			businessAddress = business.direction // ✅ ahora coincide con el modelo
+			businessDescription = business.description
+			
+			selectedCategories.clear()
+			selectedCategories.addAll(business.categories.map { it.name })
+			
+			productList.clear()
+			productList.addAll(business.categories.flatMap { it.products })
+			
+			isInitialized = true
+		}
+	}
+	
+	
 	LaunchedEffect(businessState) {
 		when (businessState) {
 			is Resource.Success -> {
-				Toast.makeText(context, "Negocio creado correctamente", Toast.LENGTH_LONG).show()
-				navController.navigate(AppRoutes.MainScreen)
+				Toast.makeText(context, "Negocio actualizado correctamente", Toast.LENGTH_LONG).show()
+				navController.popBackStack()
 				viewModel.resetState()
 			}
 			is Resource.Error -> {
@@ -536,13 +561,41 @@ fun EditedDatesBussinessScreenContent(navController: NavController) {
 					Spacer(modifier = Modifier.height(16.dp))
 					
 					Button(
-						onClick = { step = 2 },
-						modifier = Modifier
-							.fillMaxWidth(),
+						onClick = {
+							// ✅ Convertir categorías seleccionadas a objetos Category
+							val categories = selectedCategories.map { category ->
+								Category(
+									name = category,
+									products = productList.filter { product ->
+										categoryProductList.find { it.name == category }?.products?.contains(product) == true
+									}
+								)
+							}
+							
+							// ✅ Crear el mapa de actualizaciones compatible con Firestore
+							val updates = mapOf(
+								"name" to businessName,
+								"phone" to businessPhone,
+								"direction" to businessAddress,
+								"description" to businessDescription,
+								"categories" to categories.map { category ->
+									mapOf(
+										"name" to category.name,
+										"products" to category.products
+									)
+								},
+								"products" to productList
+							)
+							
+							viewModel.updateBusiness(updates)
+						},
+						modifier = Modifier.fillMaxWidth(),
 						shape = RoundedCornerShape(16.dp)
 					) {
 						Text("Guardar cambios")
 					}
+					
+					
 				}
 			}
 		}

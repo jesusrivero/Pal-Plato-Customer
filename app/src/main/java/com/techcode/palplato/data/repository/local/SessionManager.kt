@@ -17,6 +17,7 @@ class SessionManager @Inject constructor(
 	companion object {
 		private const val KEY_IS_LOGGED_IN = "is_logged_in"
 		private const val KEY_UID = "uid"
+		private const val KEY_BUSINESS_ID = "business_id"
 	}
 	
 	/**
@@ -43,6 +44,7 @@ class SessionManager @Inject constructor(
 		prefs.edit()
 			.putBoolean(KEY_IS_LOGGED_IN, false)
 			.remove(KEY_UID)
+			.remove(KEY_BUSINESS_ID)
 			.apply()
 	}
 	
@@ -50,6 +52,22 @@ class SessionManager @Inject constructor(
 	 * Obtener UID del usuario actual.
 	 */
 	fun getUserUid(): String? = prefs.getString(KEY_UID, null)
+	
+	/**
+	 * Guardar el ID del negocio.
+	 */
+	fun saveBusinessId(businessId: String) {
+		prefs.edit()
+			.putString(KEY_BUSINESS_ID, businessId)
+			.apply()
+	}
+	
+	/**
+	 * Obtener el ID del negocio actual.
+	 */
+	fun getBusinessId(): String? {
+		return prefs.getString(KEY_BUSINESS_ID, null)
+	}
 }
 
 

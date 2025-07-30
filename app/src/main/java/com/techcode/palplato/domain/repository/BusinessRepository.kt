@@ -7,6 +7,11 @@ import com.techcode.palplato.utils.Resource
 
 
 interface BusinessRepository {
-	suspend fun createBusiness(business: Business): Resource<Unit>
-
+	suspend fun createBusiness(business: Business): String
+	
+	suspend fun updateBusinessFields(
+		businessId: String,
+		updates: Map<String, Any>
+	): Resource<Unit>
+	suspend fun getBusinessById(businessId: String): Business?
 }
