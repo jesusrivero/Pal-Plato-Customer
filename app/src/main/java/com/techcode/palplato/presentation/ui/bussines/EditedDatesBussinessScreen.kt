@@ -1,19 +1,28 @@
 package com.techcode.palplato.presentation.ui.bussines
 
+import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -22,8 +31,11 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.CloudUpload
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
@@ -40,6 +52,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -48,7 +62,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -56,9 +74,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
 import com.techcode.palplato.R
+import com.techcode.palplato.domain.viewmodels.auth.BusinessViewModel
+import com.techcode.palplato.presentation.navegation.AppRoutes
+import com.techcode.palplato.utils.Resource
 
 
 @Composable
@@ -89,7 +112,31 @@ fun EditedDatesBussinessScreenContent(navController: NavController) {
 	var productInput by remember { mutableStateOf("") }
 	val selectedCategories = remember { mutableStateListOf<String>() }
 	val productList = remember { mutableStateListOf<String>() }
+	val viewModel: BusinessViewModel = hiltViewModel()
+	val businessState by viewModel.businessState.collectAsState()
+	val context = LocalContext.current
 	
+	// Logo del negocio
+	var logoUri by remember { mutableStateOf<Uri?>(null) }
+	val imagePickerLauncher = rememberLauncherForActivityResult(
+		contract = ActivityResultContracts.GetContent()
+	) { uri: Uri? ->
+		logoUri = uri
+	}
+	
+	LaunchedEffect(businessState) {
+		when (businessState) {
+			is Resource.Success -> {
+				Toast.makeText(context, "Negocio creado correctamente", Toast.LENGTH_LONG).show()
+				navController.navigate(AppRoutes.MainScreen)
+				viewModel.resetState()
+			}
+			is Resource.Error -> {
+				Toast.makeText(context, (businessState as Resource.Error).message, Toast.LENGTH_LONG).show()
+			}
+			else -> Unit
+		}
+	}
 	
 	Scaffold(
 		topBar = {
@@ -331,25 +378,160 @@ fun EditedDatesBussinessScreenContent(navController: NavController) {
 						modifier = Modifier.fillMaxWidth()
 					)
 					
-					// Logo del negocio
+					// Logo del negocio - Diseño profesional
 					Column(
 						modifier = Modifier
 							.fillMaxWidth()
-							.border(1.dp, Color.LightGray, RoundedCornerShape(16.dp))
+							.background(
+								Brush.verticalGradient(
+									colors = listOf(
+										Color(0xFFF9FAFB),
+										Color(0xFFF3F4F6)
+									)
+								),
+								RoundedCornerShape(20.dp)
+							)
+							.border(
+								1.5.dp,
+								Brush.linearGradient(
+									colors = listOf(
+										Color(0xFF2563EB),
+										Color(0xFF1E40AF)
+									)
+								),
+								RoundedCornerShape(20.dp)
+							)
 							.padding(24.dp),
 						horizontalAlignment = Alignment.CenterHorizontally
 					) {
-						Text("Sube tu logo", fontWeight = FontWeight.Bold)
+						// Título
+						Row(
+							verticalAlignment = Alignment.CenterVertically
+						) {
+							Icon(
+								Icons.Default.PhotoCamera,
+								contentDescription = null,
+								tint = Color(0xFF2563EB),
+								modifier = Modifier.size(26.dp)
+							)
+							Spacer(Modifier.width(8.dp))
+							Text(
+								"Sube tu logo",
+								fontWeight = FontWeight.Bold,
+								fontSize = 20.sp,
+								color = Color(0xFF111827)
+							)
+						}
+						
+						Spacer(Modifier.height(6.dp))
+						
 						Text(
-							"El logo de tu negocio aparecerá en la app y en los pedidos de tus clientes.",
-							style = MaterialTheme.typography.bodySmall,
-							textAlign = TextAlign.Center,
-							modifier = Modifier.padding(vertical = 8.dp)
+							"Personaliza tu negocio con una imagen profesional",
+							fontSize = 14.sp,
+							color = Color(0xFF6B7280),
+							textAlign = TextAlign.Center
 						)
-						Button(onClick = { /* Acción subir logo */ }) {
-							Text("Subir logo")
+						
+						Spacer(Modifier.height(20.dp))
+						
+						// Contenedor de imagen con estilo moderno
+						Box(
+							modifier = Modifier
+								.size(260.dp)
+								.clip(RoundedCornerShape(24.dp))
+								.background(Color.White)
+								.border(
+									1.5.dp,
+									Brush.linearGradient(
+										colors = listOf(
+											Color(0xFFE5E7EB),
+											Color(0xFFD1D5DB)
+										)
+									),
+									RoundedCornerShape(24.dp)
+								)
+								.clickable { imagePickerLauncher.launch("image/*") },
+							contentAlignment = Alignment.Center
+						) {
+							if (logoUri != null) {
+								AsyncImage(
+									model = logoUri,
+									contentDescription = "Logo del negocio",
+									contentScale = ContentScale.Crop,
+									modifier = Modifier.fillMaxSize()
+								)
+								
+								// Overlay de edición con degradado
+								Box(
+									modifier = Modifier
+										.fillMaxSize()
+										.background(Color.Black.copy(alpha = 0.35f)),
+									contentAlignment = Alignment.Center
+								) {
+									Row(
+										verticalAlignment = Alignment.CenterVertically
+									) {
+										Icon(
+											Icons.Default.Edit,
+											contentDescription = "Editar",
+											tint = Color.White,
+											modifier = Modifier.size(28.dp)
+										)
+										Spacer(Modifier.width(6.dp))
+										Text(
+											"Cambiar imagen",
+											color = Color.White,
+											fontWeight = FontWeight.Medium,
+											fontSize = 14.sp
+										)
+									}
+								}
+							} else {
+								Column(horizontalAlignment = Alignment.CenterHorizontally) {
+									// Icono circular con degradado
+									Box(
+										modifier = Modifier
+											.size(80.dp)
+											.background(
+												Brush.linearGradient(
+													colors = listOf(
+														Color(0xFF2563EB),
+														Color(0xFF1E40AF)
+													)
+												),
+												CircleShape
+											),
+										contentAlignment = Alignment.Center
+									) {
+										Icon(
+											Icons.Default.CloudUpload,
+											contentDescription = "Subir imagen",
+											tint = Color.White,
+											modifier = Modifier.size(36.dp)
+										)
+									}
+									
+									Spacer(Modifier.height(12.dp))
+									
+									Text(
+										"Toca para subir",
+										fontWeight = FontWeight.SemiBold,
+										fontSize = 16.sp,
+										color = Color(0xFF374151)
+									)
+									
+									Spacer(Modifier.height(4.dp))
+									
+									Text(
+										"JPG, PNG o GIF • Máx. 15MB",
+										fontSize = 12.sp,
+										color = Color(0xFF6B7280)
+									)
+								}
+							}
 						}
 					}
+					
 					
 					Spacer(modifier = Modifier.height(16.dp))
 					

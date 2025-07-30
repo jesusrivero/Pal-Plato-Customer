@@ -1,4 +1,4 @@
-package com.techcode.palplato.domain.usecase
+package com.techcode.palplato.domain.usecase.auth
 
 import com.google.firebase.auth.AuthResult
 import com.techcode.palplato.domain.repository.AuthRepository

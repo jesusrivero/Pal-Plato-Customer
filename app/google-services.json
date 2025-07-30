@@ -12,7 +12,20 @@
           "package_name": "com.techcode.palplato"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "347599519685-g9nrbblknc71rh1rqoqpmu0j8i9sspos.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.techcode.palplato",
+            "certificate_hash": "8dd0fbf31a18377ea5911ff34e87f8cfdc9f91d8"
+          }
+        },
+        {
+          "client_id": "347599519685-naucg77m4nreid8cqv7gqq13dfds4k4n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBQqmEwEoTblKRQ5hcIEtewyijH_YRKlH4"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "347599519685-naucg77m4nreid8cqv7gqq13dfds4k4n.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

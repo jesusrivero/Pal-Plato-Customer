@@ -8,8 +8,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.techcode.palplato.data.repository.local.SessionManager
 import com.techcode.palplato.domain.model.User
-import com.techcode.palplato.domain.usecase.LoginUseCase
-import com.techcode.palplato.domain.usecase.RegisterUseCase
+import com.techcode.palplato.domain.usecase.auth.LoginUseCase
+import com.techcode.palplato.domain.usecase.auth.RegisterUseCase
 import com.techcode.palplato.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,6 +29,9 @@ class AuthViewModel @Inject constructor(
 	
 	private val _loginState = MutableStateFlow<Resource<AuthResult>?>(null)
 	val loginState: StateFlow<Resource<AuthResult>?> = _loginState
+	
+	private val _resetPasswordState = MutableStateFlow<Resource<Boolean>?>(null)
+	val resetPasswordState: StateFlow<Resource<Boolean>?> = _resetPasswordState
 	
 	private val _registerState = MutableStateFlow<Resource<AuthResult>?>(null)
 	val registerState: StateFlow<Resource<AuthResult>?> = _registerState.asStateFlow()
@@ -64,8 +67,22 @@ class AuthViewModel @Inject constructor(
 			}
 		}
 	}
-
 	
+	fun resetPassword(email: String) {
+		viewModelScope.launch {
+			_resetPasswordState.value = Resource.Loading()
+			try {
+				FirebaseAuth.getInstance().sendPasswordResetEmail(email).await()
+				_resetPasswordState.value = Resource.Success(true)
+			} catch (e: Exception) {
+				_resetPasswordState.value = Resource.Error(e.message ?: "Error al enviar correo de recuperación")
+			}
+		}
+	}
+	
+	fun clearResetPasswordState() {
+		_resetPasswordState.value = null
+	}
 	
 	fun clearState() {
 		_registerState.value = null

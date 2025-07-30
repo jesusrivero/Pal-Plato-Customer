@@ -205,7 +205,6 @@ fun LoginScreenContent(
 			Button(
 				onClick = {
 					viewModel.login(email.trim(), password.trim())
-				
 //					isLoading = true
 //					navController.navigate(AppRoutes.MainScreen)
 				},

@@ -276,7 +276,7 @@ fun RegisterScreenContent(
 					}
 					is Resource.Success -> {
 						LaunchedEffect(Unit) {
-							navController.navigate(AppRoutes.CreateBussinessScreen) {
+							navController.navigate(AppRoutes.LoginScreen) {
 								popUpTo(AppRoutes.RegisterScreen) { inclusive = true }
 							}
 							ViewModel.clearState()
@@ -292,6 +292,7 @@ fun RegisterScreenContent(
 						)
 					}
 					null -> {}
+					Resource.Idle -> TODO()
 				}
 				
 				Spacer(modifier = Modifier.height(16.dp))

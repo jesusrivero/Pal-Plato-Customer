@@ -1,12 +1,11 @@
 plugins {
 	alias(libs.plugins.android.application)
 	alias(libs.plugins.kotlin.android)
+	alias(libs.plugins.hilt.android)  // ← Usa el alias correcto
 	alias(libs.plugins.jetbrainsKotlinSerialization)
-	id("com.google.gms.google-services") // 🔥 Requerido para Firebase
+	id("com.google.gms.google-services")
 	id("org.jetbrains.kotlin.plugin.compose")
-	id ("kotlin-kapt")
-	id ("dagger.hilt.android.plugin")
-
+	id("kotlin-kapt")
 }
 
 android {
@@ -40,44 +39,38 @@ android {
 		compose = true
 	}
 	
-
-	
 	composeOptions {
-		kotlinCompilerExtensionVersion = "1.5.13" // O la última versión estable
+		kotlinCompilerExtensionVersion = "1.5.13"
 	}
 }
 
-
-
 dependencies {
-	
 	implementation(libs.ui)
 	implementation(libs.material3)
 	implementation(libs.ui.tooling.preview)
-	
 	implementation(libs.androidx.navigation.compose)
 	implementation(libs.kotlinx.serialization.json)
 	implementation(libs.core.ktx.v1131)
-	implementation (libs.androidx.material.icons.extended)       // Icons extended
+	implementation(libs.androidx.material.icons.extended)
 	implementation(libs.material)
 	implementation(libs.datetime)
 	implementation(libs.coil.compose)
 	
-	implementation(libs.firebase.bom)
-	implementation (libs.firebase.auth.ktx)
-	implementation (libs.firebase.firestore.ktx)
+	// Firebase - Configuración correcta
+	implementation(platform(libs.firebase.bom))
+	implementation(libs.firebase.auth.ktx)
+	implementation(libs.firebase.firestore.ktx)
+	implementation(libs.play.services.auth)
 	
-	
+	implementation(libs.androidx.activity.compose.v190)
 	implementation(libs.androidx.lifecycle.viewmodel.compose)
 	
-	// Hilt para ViewModel (incluye multibinding)
-	// Hilt
+	// Hilt - Configuración corregida
 	implementation(libs.hilt.android)
-	kapt(libs.androidx.hilt.compiler)
-	kapt (libs.dagger.hilt.compiler)
+	kapt(libs.hilt.compiler)  // ← Solo este
 	implementation(libs.androidx.hilt.navigation.compose)
 	
-	//DEFAULT
+	// DEFAULT
 	implementation(libs.androidx.core.ktx)
 	implementation(libs.androidx.lifecycle.runtime.ktx)
 	implementation(libs.androidx.activity.compose)

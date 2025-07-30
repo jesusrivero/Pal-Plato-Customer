@@ -1,6 +1,7 @@
 package com.techcode.palplato.presentation.ui.auth
 
 import android.util.Patterns
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -9,60 +10,80 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.google.android.material.progressindicator.CircularProgressIndicator
-import com.techcode.palplato.R
-import com.techcode.palplato.presentation.navegation.AppRoutes
-import com.techcode.palplato.presentation.ui.commons.BottomNavigationBar
-import com.techcode.palplato.presentation.ui.order.Pedido
-import com.techcode.palplato.presentation.ui.order.PedidoItem
+import com.techcode.palplato.domain.viewmodels.auth.AuthViewModel
+import com.techcode.palplato.utils.Resource
 
 @Composable
 fun RecoverPasswordScreen(navController: NavController) {
-		RecoverPasswordScreenContent(navController = navController)
+	RecoverPasswordScreenContent(navController = navController)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RecoverPasswordScreenContent(navController: NavController) {
+fun RecoverPasswordScreenContent(
+	navController: NavController,
+	viewModel: AuthViewModel = hiltViewModel()
+) {
 	var email by rememberSaveable { mutableStateOf("") }
+	val context = LocalContext.current
+	
+	val resetState by viewModel.resetPasswordState.collectAsState()
 	var isLoading by rememberSaveable { mutableStateOf(false) }
 	
 	// Validación de email
 	val isEmailValid = Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches()
 	val emailError = email.isNotEmpty() && !isEmailValid
+	
+	// Escuchar cambios de estado de recuperación
+	LaunchedEffect(resetState) {
+		when (resetState) {
+			is Resource.Loading -> isLoading = true
+			is Resource.Success -> {
+				isLoading = false
+				Toast.makeText(context, "Correo de recuperación enviado", Toast.LENGTH_LONG).show()
+				viewModel.clearResetPasswordState()
+				navController.popBackStack() // Regresar al login
+			}
+			is Resource.Error -> {
+				isLoading = false
+				Toast.makeText(context, (resetState as Resource.Error).message, Toast.LENGTH_LONG).show()
+				viewModel.clearResetPasswordState()
+			}
+			else -> Unit
+		}
+	}
 	
 	Scaffold(
 		topBar = {
@@ -85,7 +106,6 @@ fun RecoverPasswordScreenContent(navController: NavController) {
 			horizontalAlignment = Alignment.CenterHorizontally,
 			verticalArrangement = Arrangement.Center
 		) {
-			// Ícono de recuperación
 			Icon(
 				imageVector = Icons.Default.Lock,
 				contentDescription = null,
@@ -95,7 +115,6 @@ fun RecoverPasswordScreenContent(navController: NavController) {
 				tint = MaterialTheme.colorScheme.primary
 			)
 			
-			// Título
 			Text(
 				text = "Recuperar Contraseña",
 				style = MaterialTheme.typography.headlineMedium,
@@ -104,16 +123,14 @@ fun RecoverPasswordScreenContent(navController: NavController) {
 				modifier = Modifier.padding(bottom = 8.dp)
 			)
 			
-			// Subtítulo descriptivo
 			Text(
-				text = "Ingresa tu correo electrónico y te enviaremos un código de verificación para restablecer tu contraseña.",
+				text = "Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.",
 				style = MaterialTheme.typography.bodyMedium,
 				color = MaterialTheme.colorScheme.onSurfaceVariant,
 				textAlign = TextAlign.Center,
 				modifier = Modifier.padding(bottom = 32.dp)
 			)
 			
-			// Campo de correo electrónico
 			OutlinedTextField(
 				value = email,
 				onValueChange = { email = it },
@@ -143,12 +160,9 @@ fun RecoverPasswordScreenContent(navController: NavController) {
 			
 			Spacer(modifier = Modifier.height(32.dp))
 			
-			// Botón para enviar código
 			Button(
 				onClick = {
-					isLoading = true
-					// Aquí iría la lógica para enviar el código
-					// Después de enviar, podrías navegar a una pantalla de verificación
+					viewModel.resetPassword(email.trim())
 				},
 				modifier = Modifier
 					.fillMaxWidth()
@@ -156,23 +170,20 @@ fun RecoverPasswordScreenContent(navController: NavController) {
 				enabled = isEmailValid && !isLoading
 			) {
 				if (isLoading) {
-					androidx.compose.material3.CircularProgressIndicator(
+					CircularProgressIndicator(
 						color = MaterialTheme.colorScheme.onPrimary,
 						modifier = Modifier.size(20.dp),
 						strokeWidth = 2.dp
 					)
 				} else {
-					Text("Enviar Código")
+					Text("Enviar correo")
 				}
 			}
 			
 			Spacer(modifier = Modifier.height(16.dp))
 			
-			// Botón para regresar al login
 			OutlinedButton(
-				onClick = {
-					navController.popBackStack() // Regresa a la pantalla anterior (login)
-				},
+				onClick = { navController.popBackStack() },
 				modifier = Modifier
 					.fillMaxWidth()
 					.height(50.dp)
