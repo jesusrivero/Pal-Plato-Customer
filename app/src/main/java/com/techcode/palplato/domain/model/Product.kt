@@ -12,18 +12,11 @@ data class Product(
 	val preparationTime: Int = 0,
 	val date: Long = System.currentTimeMillis(), // ✅ Fecha de creación por defecto
 	val ingredients: List<String> = emptyList(),
-	val available: Boolean = true
+	val available: Boolean = true,
+	// Nuevos campos para bebidas
+	val size: String? = null,
+	val type: String? = null,
 )
+	
+	
 
-//data class Product(
-//	val id: String = "",
-//	val businessId: String,
-//	val price: Double,
-//	val name: String,
-//	val description: String,
-//	val category: String,
-//	val imageUrl: String,
-//	val preparationTime: Int,
-//	val ingredients: List<String>,
-//	val available: Boolean
-//)

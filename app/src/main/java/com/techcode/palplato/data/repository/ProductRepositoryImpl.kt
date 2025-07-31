@@ -80,5 +80,39 @@ class ProductRepositoryImpl(
 			Result.failure(e)
 		}
 	}
+	
+	override suspend fun updateAvailability(
+		businessId: String,
+		productId: String,
+		available: Boolean
+	): Result<Unit> {
+		return try {
+			firestore.collection("businesses")
+				.document(businessId)
+				.collection("products")
+				.document(productId)
+				.update("available", available)
+				.await()
+			
+			Result.success(Unit)
+		} catch (e: Exception) {
+			Result.failure(e)
+		}
+	}
+	
+	override suspend fun deleteProduct(businessId: String, productId: String): Result<Unit> {
+		return try {
+			firestore.collection("businesses")
+				.document(businessId)
+				.collection("products")
+				.document(productId)
+				.delete()
+				.await()
+			
+			Result.success(Unit)
+		} catch (e: Exception) {
+			Result.failure(e)
+		}
+	}
 
 }

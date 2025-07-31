@@ -5,7 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.techcode.palplato.data.repository.local.SessionManager
 import com.techcode.palplato.domain.model.Product
 import com.techcode.palplato.domain.usecase.auth.bussiness.products.CreateProductUseCase
+import com.techcode.palplato.domain.usecase.auth.bussiness.products.DeleteProductUseCase
 import com.techcode.palplato.domain.usecase.auth.bussiness.products.GetProductsUseCase
+import com.techcode.palplato.domain.usecase.auth.bussiness.products.UpdateProductAvailabilityUseCase
 import com.techcode.palplato.domain.usecase.auth.bussiness.products.UpdateProductUseCase
 import com.techcode.palplato.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,6 +21,8 @@ class ProductViewModel @Inject constructor(
 	private val createProductUseCase: CreateProductUseCase,
 	private val getProductsUseCase: GetProductsUseCase,
 	private val updateProductUseCase: UpdateProductUseCase,
+	private val updateProductAvailabilityUseCase: UpdateProductAvailabilityUseCase,
+	private val deleteProductUseCase: DeleteProductUseCase,
 	private val sessionManager: SessionManager
 ) : ViewModel() {
 	
@@ -33,6 +37,12 @@ class ProductViewModel @Inject constructor(
 	
 	private val _updateState = MutableStateFlow<Resource<Unit>>(Resource.Idle)
 	val updateState: StateFlow<Resource<Unit>> = _updateState
+	
+	private val _updateAvailabilityState = MutableStateFlow<Resource<Unit>>(Resource.Idle)
+	val updateAvailabilityState: StateFlow<Resource<Unit>> = _updateAvailabilityState
+	
+	private val _deleteProductState = MutableStateFlow<Resource<Unit>>(Resource.Idle)
+	val deleteProductState: StateFlow<Resource<Unit>> = _deleteProductState
 	
 	fun createProduct(product: Product) {
 		viewModelScope.launch {
@@ -92,6 +102,50 @@ class ProductViewModel @Inject constructor(
 				Resource.Error(result.exceptionOrNull()?.message ?: "Error desconocido")
 			}
 		}
+	}
+	
+	fun updateProductAvailability(businessId: String, productId: String, available: Boolean) {
+		viewModelScope.launch {
+			_updateAvailabilityState.value = Resource.Loading()
+			
+			val result = updateProductAvailabilityUseCase(businessId, productId, available)
+			if (result.isSuccess) {
+				// Actualizar productos en memoria
+				val currentProducts = (_productsState.value as? Resource.Success)?.result?.toMutableList() ?: mutableListOf()
+				val index = currentProducts.indexOfFirst { it.id == productId }
+				if (index != -1) {
+					currentProducts[index] = currentProducts[index].copy(available = available)
+					_productsState.value = Resource.Success(currentProducts)
+				}
+				
+				_updateAvailabilityState.value = Resource.Success(Unit) // ✅ Se emite solo aquí
+			} else {
+				_updateAvailabilityState.value = Resource.Error(result.exceptionOrNull()?.message ?: "Error al cambiar disponibilidad")
+			}
+		}
+	}
+	
+	fun deleteProduct(businessId: String, productId: String) {
+		viewModelScope.launch {
+			_deleteProductState.value = Resource.Loading()
+			val result = deleteProductUseCase(businessId, productId)
+			if (result.isSuccess) {
+				val currentProducts = (_productsState.value as? Resource.Success)?.result?.toMutableList() ?: mutableListOf()
+				currentProducts.removeAll { it.id == productId }
+				_productsState.value = Resource.Success(currentProducts)
+				_deleteProductState.value = Resource.Success(Unit)
+			} else {
+				_deleteProductState.value = Resource.Error(result.exceptionOrNull()?.message ?: "Error al eliminar producto")
+			}
+		}
+	}
+	
+	fun resetDeleteState() {
+		_deleteProductState.value = Resource.Idle
+	}
+	
+	fun resetAvailabilityState() {
+		_updateAvailabilityState.value = Resource.Idle
 	}
 	
 	fun resetUpdateState() {

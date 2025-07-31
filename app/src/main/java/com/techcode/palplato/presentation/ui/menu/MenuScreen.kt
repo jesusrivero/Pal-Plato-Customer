@@ -42,6 +42,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -51,6 +52,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -60,6 +62,8 @@ import com.techcode.palplato.domain.viewmodels.auth.ProductViewModel
 import com.techcode.palplato.presentation.navegation.AppRoutes
 import com.techcode.palplato.presentation.navegation.AppRoutes.EditedMenuRoute
 import com.techcode.palplato.presentation.ui.commons.BottomNavigationBar
+import com.techcode.palplato.utils.AppAlertDialog
+import com.techcode.palplato.utils.AppConfirmDialog
 import com.techcode.palplato.utils.Resource
 
 @Composable
@@ -75,10 +79,43 @@ fun MenuScreenContent(
 	navController: NavController,
 	viewModel: ProductViewModel = hiltViewModel()
 ) {
-	val tabs = listOf("Todos", "Combos", "Bebidas")
+	val tabs = listOf("Todos", "Menus", "Bebidas")
 	var selectedTab by rememberSaveable { mutableStateOf(0) }
-	
+	val updateAvailabilityState by viewModel.updateAvailabilityState.collectAsState()
 	val productsState by viewModel.productsState.collectAsState()
+	val deleteProductState by viewModel.deleteProductState.collectAsState()
+	var showConfirmDialog by remember { mutableStateOf(false) }
+	var confirmDialogTitle by remember { mutableStateOf("") }
+	var confirmDialogMessage by remember { mutableStateOf("") }
+	var confirmAction: () -> Unit by remember { mutableStateOf({}) }
+	
+	// Determinar cuál estado mostrar en AppAlertDialog
+	val dialogState = when {
+		deleteProductState is Resource.Success || deleteProductState is Resource.Error -> deleteProductState
+		updateAvailabilityState is Resource.Success || updateAvailabilityState is Resource.Error -> updateAvailabilityState
+		else -> Resource.Idle
+	}
+	
+	AppAlertDialog(
+		state = dialogState,
+		onDismiss = {
+			viewModel.resetDeleteState()
+			viewModel.resetAvailabilityState()
+		}
+	)
+	
+	if (showConfirmDialog) {
+		AppConfirmDialog(
+			title = confirmDialogTitle,
+			message = confirmDialogMessage,
+			onConfirm = {
+				confirmAction()
+			},
+			onDismiss = {
+				showConfirmDialog = false
+			}
+		)
+	}
 	
 	// Llamar al cargar pantalla
 	LaunchedEffect(Unit) {
@@ -158,7 +195,13 @@ fun MenuScreenContent(
 				}
 				
 				is Resource.Success -> {
-					val products = state.result
+					// ✅ Filtrado según tab seleccionado
+					val products = when (selectedTab) {
+						1 -> state.result.filter { it.category != "Bebidas" } // Solo menús
+						2 -> state.result.filter { it.category == "Bebidas" } // Solo bebidas
+						else -> state.result // Todos
+					}
+					
 					if (products.isEmpty()) {
 						Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
 							Text("No hay menús disponibles", color = Color.Gray)
@@ -174,10 +217,35 @@ fun MenuScreenContent(
 								MenuCard(
 									product = product,
 									onClick = {
-										navController.navigate(EditedMenuRoute(product.id)) // ✅ Ahora no hay conflicto
+										navController.navigate(EditedMenuRoute(product.id))
+									},
+									onToggleAvailability = {
+										confirmDialogTitle =
+											if (product.available) "Desactivar producto" else "Activar producto"
+										confirmDialogMessage =
+											"¿Estás seguro que deseas ${if (product.available) "desactivar" else "activar"} este producto?"
+										confirmAction = {
+											viewModel.updateProductAvailability(
+												product.businessId,
+												product.id,
+												!product.available
+											)
+										}
+										showConfirmDialog = true
+									},
+									onDelete = {
+										confirmDialogTitle = "Eliminar producto"
+										confirmDialogMessage =
+											"¿Estás seguro que deseas eliminar este producto?"
+										confirmAction = {
+											viewModel.deleteProduct(
+												product.businessId,
+												product.id
+											)
+										}
+										showConfirmDialog = true
 									}
 								)
-								
 							}
 						}
 					}
@@ -188,6 +256,7 @@ fun MenuScreenContent(
 		}
 	}
 }
+
 
 
 @Composable
@@ -232,7 +301,9 @@ fun MenuCard(
 		Text(
 			text = product.name,
 			fontWeight = FontWeight.SemiBold,
-			style = MaterialTheme.typography.bodyMedium
+			style = MaterialTheme.typography.bodyMedium,
+			maxLines = 1,
+			overflow = TextOverflow.Ellipsis // ✅ Agrega los "..."
 		)
 		
 		Text(
@@ -292,13 +363,6 @@ fun MenuCard(
 	}
 }
 
-
-
-data class MenuItem(
-	val title: String,
-	val description: String,
-	val imageRes: Int
-)
 
 
 

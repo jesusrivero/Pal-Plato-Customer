@@ -14,7 +14,9 @@ import com.techcode.palplato.domain.usecase.auth.bussiness.CreateBusinessUseCase
 import com.techcode.palplato.domain.usecase.auth.bussiness.GetBusinessUseCase
 import com.techcode.palplato.domain.usecase.auth.bussiness.UpdateBusinessUseCase
 import com.techcode.palplato.domain.usecase.auth.bussiness.products.CreateProductUseCase
+import com.techcode.palplato.domain.usecase.auth.bussiness.products.DeleteProductUseCase
 import com.techcode.palplato.domain.usecase.auth.bussiness.products.GetProductsUseCase
+import com.techcode.palplato.domain.usecase.auth.bussiness.products.UpdateProductAvailabilityUseCase
 import com.techcode.palplato.domain.usecase.auth.bussiness.products.UpdateProductUseCase
 import dagger.Module
 import dagger.Provides
@@ -105,4 +107,18 @@ object AppModule {
 	fun provideUpdateProductUseCase(productRepository: ProductRepository): UpdateProductUseCase {
 		return UpdateProductUseCase(productRepository)
 	}
+	
+	@Provides
+	@Singleton
+	fun provideUpdateProductAvailabilityUseCase(
+		productRepository: ProductRepository
+	): UpdateProductAvailabilityUseCase {
+		return UpdateProductAvailabilityUseCase(productRepository)
+	}
+	@Provides
+	@Singleton
+	fun provideDeleteProductUseCase(productRepository: ProductRepository): DeleteProductUseCase {
+		return DeleteProductUseCase(productRepository)
+	}
+	
 }

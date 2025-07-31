@@ -94,50 +94,54 @@ fun EditedMenuScreenContent(
 	var description by rememberSaveable { mutableStateOf("") }
 	var price by rememberSaveable { mutableStateOf("") }
 	var selectedCategory by rememberSaveable { mutableStateOf("") }
+	var size by rememberSaveable { mutableStateOf("") }
+	var type by rememberSaveable { mutableStateOf("") }
 	val categoryOptions = listOf("Entradas", "Plato fuerte", "Postres", "Bebidas")
-	var expanded by remember { mutableStateOf(false) }
+	val sizeOptions = listOf("Pequeño", "Mediano", "Grande")
+	val typeOptions = listOf("Fría", "Caliente", "Alcoholica", "Sin alcohol")
 	
-	// Imagen del plato
+	var expanded by remember { mutableStateOf(false) }
+	var expandedSize by remember { mutableStateOf(false) }
+	var expandedType by remember { mutableStateOf(false) }
+	
+	// Imagen
 	var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
 	val imagePickerLauncher = rememberLauncherForActivityResult(
 		contract = ActivityResultContracts.GetContent()
-	) { uri: Uri? ->
-		selectedImageUri = uri
-	}
+	) { uri: Uri? -> selectedImageUri = uri }
 	
-	// Ingredientes principales
+	// Ingredientes
 	var ingredienteInput by remember { mutableStateOf("") }
 	val ingredientesPrincipales = remember { mutableStateListOf<String>() }
 	
 	// Estado de actualización
 	val updateState by viewModel.updateState.collectAsState()
 	
-	// Autocompletar datos cuando se carga el producto
+	// Autocompletar datos
 	LaunchedEffect(selectedProduct) {
 		selectedProduct?.let {
 			dishName = it.name
 			description = it.description
 			price = it.price.toString()
 			selectedCategory = it.category
+			size = it.size ?: ""
+			type = it.type ?: ""
 			ingredientesPrincipales.clear()
 			ingredientesPrincipales.addAll(it.ingredients)
 			selectedImageUri = it.imageUrl.takeIf { url -> url.isNotBlank() }?.let { Uri.parse(it) }
 		}
 	}
 	
-	// Mostrar el diálogo reutilizable de feedback
+	// Alert de feedback
 	AppAlertDialog(
 		state = updateState,
 		onDismiss = {
-			viewModel.resetUpdateState() // Limpiar estado en el ViewModel
+			viewModel.resetUpdateState()
 			if (updateState is Resource.Success) {
-				navController.popBackStack() // Volver atrás solo si fue exitoso
+				navController.popBackStack()
 			}
 		}
 	)
-	
-	
-	
 	
 	Scaffold(
 		topBar = {
@@ -158,7 +162,174 @@ fun EditedMenuScreenContent(
 				.verticalScroll(rememberScrollState()),
 			verticalArrangement = Arrangement.spacedBy(12.dp)
 		) {
-			// Imagen seleccionada
+			// CATEGORÍA primero
+			ExposedDropdownMenuBox(
+				expanded = expanded,
+				
+				onExpandedChange = { expanded = !expanded }
+			) {
+				OutlinedTextField(
+					value = selectedCategory,
+					onValueChange = {},
+					readOnly = true,
+					shape = RoundedCornerShape(16.dp),
+					label = { Text("Categoría") },
+					trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
+					modifier = Modifier
+						.fillMaxWidth()
+						.menuAnchor()
+				)
+				ExposedDropdownMenu(
+					expanded = expanded,
+					onDismissRequest = { expanded = false }
+				) {
+					categoryOptions.forEach { category ->
+						DropdownMenuItem(
+							text = { Text(category) },
+							onClick = {
+								selectedCategory = category
+								expanded = false
+							}
+						)
+					}
+				}
+			}
+			
+			// Nombre
+			OutlinedTextField(
+				value = dishName,
+				shape = RoundedCornerShape(16.dp),
+				onValueChange = { dishName = it },
+				label = { Text("Nombre del producto") },
+				modifier = Modifier.fillMaxWidth()
+			)
+			
+			// Precio
+			OutlinedTextField(
+				value = price,
+				onValueChange = { price = it },
+				label = { Text("Precio") },
+				shape = RoundedCornerShape(16.dp),
+				keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+				modifier = Modifier.fillMaxWidth()
+			)
+			
+			// Descripción
+			OutlinedTextField(
+				value = description,
+				onValueChange = { description = it },
+				label = { Text("Descripción") },
+				shape = RoundedCornerShape(16.dp),
+				modifier = Modifier
+					.fillMaxWidth()
+					.height(100.dp)
+			)
+			
+			// Si es bebida mostramos tamaño y tipo
+			if (selectedCategory == "Bebidas") {
+				ExposedDropdownMenuBox(
+					expanded = expandedSize,
+					onExpandedChange = { expandedSize = !expandedSize }
+				) {
+					OutlinedTextField(
+						value = size,
+						onValueChange = {},
+						readOnly = true,
+						shape = RoundedCornerShape(16.dp),
+						label = { Text("Tamaño") },
+						trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expandedSize) },
+						modifier = Modifier
+							.fillMaxWidth()
+							.menuAnchor()
+					)
+					ExposedDropdownMenu(
+						expanded = expandedSize,
+						onDismissRequest = { expandedSize = false }
+					) {
+						sizeOptions.forEach { option ->
+							DropdownMenuItem(
+								text = { Text(option) },
+								onClick = {
+									size = option
+									expandedSize = false
+								}
+							)
+						}
+					}
+				}
+				
+				ExposedDropdownMenuBox(
+					expanded = expandedType,
+					onExpandedChange = { expandedType = !expandedType }
+				) {
+					OutlinedTextField(
+						value = type,
+						onValueChange = {},
+						readOnly = true,
+						label = { Text("Tipo de bebida") },
+						shape = RoundedCornerShape(16.dp),
+						trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expandedType) },
+						modifier = Modifier
+							.fillMaxWidth()
+							.menuAnchor()
+					)
+					ExposedDropdownMenu(
+						expanded = expandedType,
+						onDismissRequest = { expandedType = false }
+					) {
+						typeOptions.forEach { option ->
+							DropdownMenuItem(
+								text = { Text(option) },
+								onClick = {
+									type = option
+									expandedType = false
+								}
+							)
+						}
+					}
+				}
+			} else {
+				// Si no es bebida mostramos ingredientes
+				OutlinedTextField(
+					value = ingredienteInput,
+					onValueChange = { ingredienteInput = it },
+					label = { Text("Ingrediente principal") },
+					shape = RoundedCornerShape(16.dp),
+					trailingIcon = {
+						Icon(
+							imageVector = Icons.Default.Add,
+							contentDescription = "Agregar ingrediente",
+							modifier = Modifier.clickable {
+								if (ingredienteInput.isNotBlank()) {
+									ingredientesPrincipales.add(ingredienteInput.trim())
+									ingredienteInput = ""
+								}
+							}
+						)
+					},
+					modifier = Modifier.fillMaxWidth()
+				)
+				
+				FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+					ingredientesPrincipales.forEach { ingrediente ->
+						AssistChip(
+							onClick = {},
+							label = { Text(ingrediente) },
+							trailingIcon = {
+								Icon(
+									imageVector = Icons.Default.Close,
+									contentDescription = "Eliminar",
+									modifier = Modifier.clickable {
+										ingredientesPrincipales.remove(ingrediente)
+									}
+								)
+							}
+						)
+					}
+				}
+			}
+			
+			// Imagen al final
 			Box(
 				modifier = Modifier
 					.fillMaxWidth()
@@ -185,95 +356,7 @@ fun EditedMenuScreenContent(
 				}
 			}
 			
-			OutlinedTextField(
-				value = dishName,
-				onValueChange = { dishName = it },
-				label = { Text("Nombre del plato") },
-				modifier = Modifier.fillMaxWidth()
-			)
-			
-			OutlinedTextField(
-				value = price,
-				onValueChange = { price = it },
-				label = { Text("Precio") },
-				keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-				modifier = Modifier.fillMaxWidth()
-			)
-			
-			OutlinedTextField(
-				value = description,
-				onValueChange = { description = it },
-				label = { Text("Descripción") },
-				modifier = Modifier.fillMaxWidth().height(100.dp)
-			)
-			
-			ExposedDropdownMenuBox(
-				expanded = expanded,
-				onExpandedChange = { expanded = !expanded }
-			) {
-				OutlinedTextField(
-					value = selectedCategory,
-					onValueChange = {},
-					readOnly = true,
-					label = { Text("Categoría") },
-					trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-					modifier = Modifier.fillMaxWidth().menuAnchor()
-				)
-				
-				ExposedDropdownMenu(
-					expanded = expanded,
-					onDismissRequest = { expanded = false }
-				) {
-					categoryOptions.forEach { category ->
-						DropdownMenuItem(
-							text = { Text(category) },
-							onClick = {
-								selectedCategory = category
-								expanded = false
-							}
-						)
-					}
-				}
-			}
-			
-			// Ingredientes
-			OutlinedTextField(
-				value = ingredienteInput,
-				onValueChange = { ingredienteInput = it },
-				label = { Text("Ingrediente principal") },
-				trailingIcon = {
-					Icon(
-						imageVector = Icons.Default.Add,
-						contentDescription = "Agregar ingrediente",
-						modifier = Modifier.clickable {
-							if (ingredienteInput.isNotBlank()) {
-								ingredientesPrincipales.add(ingredienteInput.trim())
-								ingredienteInput = ""
-							}
-						}
-					)
-				},
-				modifier = Modifier.fillMaxWidth()
-			)
-			
-			FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-				ingredientesPrincipales.forEach { ingrediente ->
-					AssistChip(
-						onClick = {},
-						label = { Text(ingrediente) },
-						trailingIcon = {
-							Icon(
-								imageVector = Icons.Default.Close,
-								contentDescription = "Eliminar",
-								modifier = Modifier.clickable {
-									ingredientesPrincipales.remove(ingrediente)
-								}
-							)
-						}
-					)
-				}
-			}
-			
+			// Botón Guardar
 			Button(
 				onClick = {
 					selectedProduct?.let {
@@ -282,7 +365,9 @@ fun EditedMenuScreenContent(
 							description = description,
 							price = price.toDoubleOrNull() ?: 0.0,
 							category = selectedCategory,
-							ingredients = ingredientesPrincipales,
+							size = if (selectedCategory == "Bebidas") size else null,
+							type = if (selectedCategory == "Bebidas") type else null,
+							ingredients = if (selectedCategory != "Bebidas") ingredientesPrincipales else emptyList(),
 							imageUrl = selectedImageUri?.toString() ?: it.imageUrl
 						)
 						viewModel.updateProduct(updatedProduct)
@@ -305,6 +390,8 @@ fun EditedMenuScreenContent(
 		}
 	}
 }
+
+
 
 
 //@Preview(showBackground = true)

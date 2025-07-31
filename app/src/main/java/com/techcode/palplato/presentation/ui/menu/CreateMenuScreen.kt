@@ -49,13 +49,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.techcode.palplato.R
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateListOf
@@ -86,8 +84,16 @@ fun CreateMenuScreenContent(
 	var price by rememberSaveable { mutableStateOf("") }
 	var preparationTime by rememberSaveable { mutableStateOf("") }
 	var selectedCategory by rememberSaveable { mutableStateOf("") }
+	var size by rememberSaveable { mutableStateOf("") }
+	var type by rememberSaveable { mutableStateOf("") }
+	
 	val categoryOptions = listOf("Entradas", "Plato fuerte", "Postres", "Bebidas")
+	val sizeOptions = listOf("Pequeño", "Mediano", "Grande")
+	val typeOptions = listOf("Fría", "Caliente", "Alcoholica", "Sin alcohol")
+	
 	var expanded by remember { mutableStateOf(false) }
+	var expandedSize by remember { mutableStateOf(false) }
+	var expandedType by remember { mutableStateOf(false) }
 	
 	// Imagen
 	var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
@@ -99,9 +105,8 @@ fun CreateMenuScreenContent(
 	var ingredienteInput by remember { mutableStateOf("") }
 	val ingredientesPrincipales = remember { mutableStateListOf<String>() }
 	
-	// Errores de validación
+	// Errores
 	var nameError by remember { mutableStateOf<String?>(null) }
-	var timeError by remember { mutableStateOf<String?>(null) }
 	var priceError by remember { mutableStateOf<String?>(null) }
 	var descriptionError by remember { mutableStateOf<String?>(null) }
 	var categoryError by remember { mutableStateOf<String?>(null) }
@@ -128,15 +133,6 @@ fun CreateMenuScreenContent(
 					IconButton(onClick = { navController.popBackStack() }) {
 						Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
 					}
-				},
-				actions = {
-					IconButton(onClick = { /* Notificaciones */ }) {
-						Icon(
-							painter = painterResource(id = R.drawable.ic_notification),
-							contentDescription = "Notificaciones",
-							modifier = Modifier.size(25.dp)
-						)
-					}
 				}
 			)
 		}
@@ -148,7 +144,207 @@ fun CreateMenuScreenContent(
 				.verticalScroll(rememberScrollState()),
 			verticalArrangement = Arrangement.spacedBy(12.dp)
 		) {
-			// Imagen
+			// CATEGORÍA
+			ExposedDropdownMenuBox(
+				expanded = expanded,
+				onExpandedChange = { expanded = !expanded }
+			) {
+				OutlinedTextField(
+					value = selectedCategory,
+					onValueChange = {},
+					readOnly = true,
+					label = { Text("Categoría") },
+					trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
+					isError = categoryError != null,
+					modifier = Modifier
+						.fillMaxWidth()
+						.menuAnchor(),
+					shape = RoundedCornerShape(16.dp)
+				)
+				ExposedDropdownMenu(
+					expanded = expanded,
+					onDismissRequest = { expanded = false }
+				) {
+					categoryOptions.forEach { category ->
+						DropdownMenuItem(
+							text = { Text(category) },
+							onClick = {
+								selectedCategory = category
+								categoryError = null
+								expanded = false
+							}
+						)
+					}
+				}
+			}
+			if (categoryError != null) {
+				Text(categoryError!!, color = Color.Red, fontSize = 12.sp)
+			}
+			
+			// NOMBRE
+			OutlinedTextField(
+				value = dishName,
+				onValueChange = {
+					dishName = it
+					nameError = if (dishName.isBlank()) "El nombre es obligatorio" else null
+				},
+				label = { Text("Nombre del producto") },
+				isError = nameError != null,
+				modifier = Modifier.fillMaxWidth(),
+				shape = RoundedCornerShape(16.dp)
+			)
+			if (nameError != null) {
+				Text(nameError!!, color = Color.Red, fontSize = 12.sp)
+			}
+			
+			// DESCRIPCIÓN
+			OutlinedTextField(
+				value = description,
+				onValueChange = {
+					description = it
+					descriptionError = if (description.isBlank()) "La descripción es obligatoria" else null
+				},
+				label = { Text("Descripción") },
+				isError = descriptionError != null,
+				modifier = Modifier.fillMaxWidth(),
+				shape = RoundedCornerShape(16.dp),
+				minLines = 3
+			)
+			if (descriptionError != null) {
+				Text(descriptionError!!, color = Color.Red, fontSize = 12.sp)
+			}
+			
+			// PRECIO
+			OutlinedTextField(
+				value = if (price.isNotEmpty()) "$price" else "",
+				onValueChange = { input ->
+					val cleanInput = input.replace("$", "").trim()
+					price = cleanInput.filter { it.isDigit() || it == '.' }
+					priceError = if (price.isBlank()) "El precio es obligatorio" else null
+				},
+				label = { Text("Precio") },
+				leadingIcon = { Text("$") },
+				isError = priceError != null,
+				keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+				modifier = Modifier.fillMaxWidth(),
+				shape = RoundedCornerShape(16.dp)
+			)
+			if (priceError != null) {
+				Text(priceError!!, color = Color.Red, fontSize = 12.sp)
+			}
+			
+			if (selectedCategory == "Bebidas") {
+				// CAMPOS SOLO PARA BEBIDAS
+				ExposedDropdownMenuBox(
+					expanded = expandedSize,
+					onExpandedChange = { expandedSize = !expandedSize }
+				) {
+					OutlinedTextField(
+						value = size,
+						onValueChange = {},
+						readOnly = true,
+						label = { Text("Tamaño") },
+						trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expandedSize) },
+						modifier = Modifier
+							.fillMaxWidth()
+							.menuAnchor(),
+						shape = RoundedCornerShape(16.dp)
+					)
+					ExposedDropdownMenu(
+						expanded = expandedSize,
+						onDismissRequest = { expandedSize = false }
+					) {
+						sizeOptions.forEach { option ->
+							DropdownMenuItem(
+								text = { Text(option) },
+								onClick = {
+									size = option
+									expandedSize = false
+								}
+							)
+						}
+					}
+				}
+				
+				ExposedDropdownMenuBox(
+					expanded = expandedType,
+					onExpandedChange = { expandedType = !expandedType }
+				) {
+					OutlinedTextField(
+						value = type,
+						onValueChange = {},
+						readOnly = true,
+						label = { Text("Tipo de bebida") },
+						trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expandedType) },
+						modifier = Modifier
+							.fillMaxWidth()
+							.menuAnchor(),
+						shape = RoundedCornerShape(16.dp)
+					)
+					ExposedDropdownMenu(
+						expanded = expandedType,
+						onDismissRequest = { expandedType = false }
+					) {
+						typeOptions.forEach { option ->
+							DropdownMenuItem(
+								text = { Text(option) },
+								onClick = {
+									type = option
+									expandedType = false
+								}
+							)
+						}
+					}
+				}
+			} else {
+				// CAMPOS SOLO PARA COMIDA
+				OutlinedTextField(
+					value = preparationTime,
+					onValueChange = { preparationTime = it.filter { ch -> ch.isDigit() } },
+					label = { Text("Tiempo de preparación (min)") },
+					keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+					modifier = Modifier.fillMaxWidth(),
+					shape = RoundedCornerShape(16.dp)
+				)
+				
+				OutlinedTextField(
+					value = ingredienteInput,
+					onValueChange = { ingredienteInput = it },
+					label = { Text("Ingrediente principal") },
+					trailingIcon = {
+						Icon(
+							Icons.Default.Add,
+							contentDescription = "Agregar",
+							modifier = Modifier.clickable {
+								if (ingredienteInput.isNotBlank()) {
+									ingredientesPrincipales.add(ingredienteInput.trim())
+									ingredienteInput = ""
+								}
+							}
+						)
+					},
+					modifier = Modifier.fillMaxWidth(),
+					shape = RoundedCornerShape(16.dp)
+				)
+				
+				FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+					ingredientesPrincipales.forEach { ingrediente ->
+						AssistChip(
+							onClick = {},
+							label = { Text(ingrediente, fontSize = 10.sp) },
+							trailingIcon = {
+								Icon(
+									Icons.Default.Close,
+									contentDescription = "Eliminar",
+									modifier = Modifier.clickable { ingredientesPrincipales.remove(ingrediente) }
+								)
+							}
+						)
+					}
+				}
+			}
+			
+			// IMAGEN (AL FINAL)
 			Box(
 				modifier = Modifier
 					.fillMaxWidth()
@@ -175,166 +371,7 @@ fun CreateMenuScreenContent(
 				}
 			}
 			
-			// Nombre del plato
-			OutlinedTextField(
-				value = dishName,
-				onValueChange = {
-					dishName = it
-					nameError = if (dishName.isBlank()) "El nombre es obligatorio" else null
-				},
-				label = { Text("Nombre del plato") },
-				isError = nameError != null,
-				modifier = Modifier.fillMaxWidth(),
-				shape = RoundedCornerShape(16.dp)
-			)
-			if (nameError != null) {
-				Text(nameError!!, color = Color.Red, fontSize = 12.sp)
-			}
-			
-			// Ingredientes principales
-			OutlinedTextField(
-				value = ingredienteInput,
-				onValueChange = { ingredienteInput = it },
-				label = { Text("Ingrediente principal") },
-				trailingIcon = {
-					Icon(
-						Icons.Default.Add,
-						contentDescription = "Agregar",
-						modifier = Modifier.clickable {
-							if (ingredienteInput.isNotBlank()) {
-								ingredientesPrincipales.add(ingredienteInput.trim())
-								ingredienteInput = ""
-							}
-						}
-					)
-				},
-				modifier = Modifier.fillMaxWidth(),
-				shape = RoundedCornerShape(16.dp)
-			)
-			
-			FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-				ingredientesPrincipales.forEach { ingrediente ->
-					AssistChip(
-						onClick = {},
-						label = { Text(ingrediente, fontSize = 10.sp) },
-						trailingIcon = {
-							Icon(
-								Icons.Default.Close,
-								contentDescription = "Eliminar",
-								modifier = Modifier.clickable { ingredientesPrincipales.remove(ingrediente) }
-							)
-						}
-					)
-				}
-			}
-			
-			// Precio con formato automático corregido
-			OutlinedTextField(
-				value = if (price.isNotEmpty()) "$price" else "",
-				onValueChange = { input ->
-					val cleanInput = input.replace("$", "").trim()
-					val filtered = cleanInput.filter { it.isDigit() || it == '.' }
-					
-					// Evitar más de un punto decimal
-					val formatted = if (filtered.count { it == '.' } > 1) {
-						filtered.dropLast(1)
-					} else filtered
-					
-					price = formatted
-					priceError = if (formatted.isEmpty()) "El precio es obligatorio" else null
-				},
-				label = { Text("Precio") },
-				leadingIcon = { Text("$") }, // ✅ Mostrar $ fijo a la izquierda
-				isError = priceError != null,
-				keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-				modifier = Modifier.fillMaxWidth(),
-				shape = RoundedCornerShape(16.dp)
-			)
-			if (priceError != null) {
-				Text(priceError!!, color = Color.Red, fontSize = 12.sp)
-			}
-
-
-// Tiempo de preparación con formato automático
-			OutlinedTextField(
-				value = preparationTime,
-				onValueChange = { input ->
-					val cleanInput = input.replace("min", "").trim()
-					val filtered = cleanInput.filter { it.isDigit() }
-					
-					preparationTime = if (filtered.isNotEmpty()) {
-						"$filtered min"
-					} else ""
-					timeError = if (filtered.isEmpty()) "El tiempo es obligatorio" else null
-				},
-				label = { Text("Tiempo de preparación") },
-				isError = timeError != null,
-				keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-				modifier = Modifier.fillMaxWidth(),
-				shape = RoundedCornerShape(16.dp)
-			)
-			if (timeError != null) {
-				Text(timeError!!, color = Color.Red, fontSize = 12.sp)
-			}
-			
-			// Descripción
-			OutlinedTextField(
-				value = description,
-				onValueChange = {
-					description = it
-					descriptionError = if (description.isBlank()) "La descripción es obligatoria" else null
-				},
-				label = { Text("Descripción") },
-				isError = descriptionError != null,
-				modifier = Modifier.fillMaxWidth(),
-				shape = RoundedCornerShape(16.dp),
-				minLines = 3
-			)
-			if (descriptionError != null) {
-				Text(descriptionError!!, color = Color.Red, fontSize = 12.sp)
-			}
-			
-			
-			
-			// Categoría
-			ExposedDropdownMenuBox(
-				expanded = expanded,
-				onExpandedChange = { expanded = !expanded }
-			) {
-				OutlinedTextField(
-					value = selectedCategory,
-					onValueChange = {},
-					readOnly = true,
-					label = { Text("Categoría") },
-					trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-					isError = categoryError != null,
-					modifier = Modifier
-						.fillMaxWidth()
-						.menuAnchor(),
-					shape = RoundedCornerShape(16.dp)
-				)
-				
-				ExposedDropdownMenu(
-					expanded = expanded,
-					onDismissRequest = { expanded = false }
-				) {
-					categoryOptions.forEach { category ->
-						DropdownMenuItem(
-							text = { Text(category) },
-							onClick = {
-								selectedCategory = category
-								categoryError = null
-								expanded = false
-							}
-						)
-					}
-				}
-			}
-			if (categoryError != null) {
-				Text(categoryError!!, color = Color.Red, fontSize = 12.sp)
-			}
-			
-			// Botón de guardado
+			// BOTÓN GUARDAR
 			Button(
 				onClick = {
 					var isValid = true
@@ -362,10 +399,10 @@ fun CreateMenuScreenContent(
 							description = description,
 							category = selectedCategory,
 							imageUrl = selectedImageUri?.toString() ?: "",
-							preparationTime = preparationTime.replace("min", "").trim().toIntOrNull() ?: 0,
-							ingredients = ingredientesPrincipales,
 							available = true,
-							price = price.replace("$", "").trim().toDoubleOrNull() ?: 0.0
+							price = price.replace("$", "").trim().toDoubleOrNull() ?: 0.0,
+							size = if (selectedCategory == "Bebidas") size else null,
+							type = if (selectedCategory == "Bebidas") type else null
 						)
 						viewModel.createProduct(product)
 					}
@@ -381,6 +418,7 @@ fun CreateMenuScreenContent(
 		}
 	}
 }
+
 
 
 
