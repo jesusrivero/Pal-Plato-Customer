@@ -52,6 +52,9 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.techcode.palplato.domain.model.BusinessSchedule
 import com.techcode.palplato.domain.viewmodels.auth.BusinessViewModel
+import com.techcode.palplato.utils.AppAlertDialog
+import com.techcode.palplato.utils.AppConfirmDialog
+import com.techcode.palplato.utils.Resource
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.time.timepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
@@ -77,8 +80,54 @@ fun EditedschedulesBusseinessScreenContent(navController: NavController) {
 	val openingHours = remember { mutableStateMapOf<String, LocalTime?>() }
 	val closingHours = remember { mutableStateMapOf<String, LocalTime?>() }
 	val switchStates = remember { mutableStateMapOf<String, Boolean>() }
-	
+	val businessState by viewModel.businessState.collectAsState()
 	val formatter = DateTimeFormatter.ofPattern("HH:mm")
+	var showConfirmDialog by remember { mutableStateOf(false) }
+	val isActive = businessData?.state ?: true
+	
+	AppAlertDialog(
+		state = businessState,
+		onDismiss = {
+			viewModel.resetState()
+			if (businessState is Resource.Success) {
+				navController.popBackStack()
+			}
+		}
+	)
+	
+	if (showConfirmDialog) {
+		AppConfirmDialog(
+			title = "Confirmar cambios",
+			message = "¿Estás seguro de que deseas guardar los horarios actualizados?",
+			confirmText = "Guardar",
+			cancelText = "Cancelar",
+			onConfirm = {
+				val updatedSchedule = daysOfWeek.map { day ->
+					BusinessSchedule(
+						day = day,
+						openTime = openingHours[day]?.format(formatter),
+						closeTime = closingHours[day]?.format(formatter),
+						isOpen = switchStates[day] == true
+					)
+				}
+				
+				val updates = mapOf(
+					"schedule" to updatedSchedule.map {
+						mapOf(
+							"day" to it.day,
+							"openTime" to it.openTime,
+							"closeTime" to it.closeTime,
+							"isOpen" to it.isOpen
+						)
+					}
+				)
+				
+				viewModel.updateBusiness(updates)
+			},
+			onDismiss = { showConfirmDialog = false }
+		)
+	}
+	
 	
 	// Cargar datos del negocio
 	LaunchedEffect(Unit) {
@@ -194,35 +243,14 @@ fun EditedschedulesBusseinessScreenContent(navController: NavController) {
 					Spacer(modifier = Modifier.height(24.dp))
 					
 					Button(
-						onClick = {
-							val updatedSchedule = daysOfWeek.map { day ->
-								BusinessSchedule(
-									day = day,
-									openTime = openingHours[day]?.format(formatter),
-									closeTime = closingHours[day]?.format(formatter),
-									isOpen = switchStates[day] == true
-								)
-							}
-							
-							val updates = mapOf(
-								"schedule" to updatedSchedule.map {
-									mapOf(
-										"day" to it.day,
-										"openTime" to it.openTime,
-										"closeTime" to it.closeTime,
-										"isOpen" to it.isOpen
-									)
-								}
-							)
-							
-							viewModel.updateBusiness(updates)
-							navController.popBackStack()
-						},
+						onClick = { showConfirmDialog = true },
 						modifier = Modifier.fillMaxWidth(),
 						shape = RoundedCornerShape(16.dp)
 					) {
 						Text("Guardar horarios", style = MaterialTheme.typography.labelLarge)
 					}
+					
+					
 					
 					MaterialDialog(
 						dialogState = timeDialogState,

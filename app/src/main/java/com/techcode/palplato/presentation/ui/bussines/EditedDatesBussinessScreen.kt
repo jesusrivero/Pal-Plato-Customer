@@ -1,7 +1,6 @@
 package com.techcode.palplato.presentation.ui.bussines
 
 import android.net.Uri
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -82,6 +81,8 @@ import coil.compose.AsyncImage
 import com.techcode.palplato.R
 import com.techcode.palplato.domain.model.Category
 import com.techcode.palplato.domain.viewmodels.auth.BusinessViewModel
+import com.techcode.palplato.utils.AppAlertDialog
+import com.techcode.palplato.utils.AppConfirmDialog
 import com.techcode.palplato.utils.Resource
 
 
@@ -115,8 +116,13 @@ fun EditedDatesBussinessScreenContent(navController: NavController) {
 	val productList = remember { mutableStateListOf<String>() }
 	val viewModel: BusinessViewModel = hiltViewModel()
 	val businessState by viewModel.businessState.collectAsState()
+	
 	val context = LocalContext.current
 	val businessData by viewModel.businessData.collectAsState()
+	var categoryError by remember { mutableStateOf<String?>(null) }
+	var phoneError by remember { mutableStateOf<String?>(null) }
+	var showConfirmDialog by remember { mutableStateOf(false) }
+	
 	// Logo del negocio
 	var logoUri by remember { mutableStateOf<Uri?>(null) }
 	val imagePickerLauncher = rememberLauncherForActivityResult(
@@ -124,6 +130,17 @@ fun EditedDatesBussinessScreenContent(navController: NavController) {
 	) { uri: Uri? ->
 		logoUri = uri
 	}
+	
+	AppAlertDialog(
+		state = businessState,
+		onDismiss = {
+			viewModel.resetState()
+			// Si quieres cerrar la pantalla después de éxito:
+			if (businessState is Resource.Success) {
+				navController.popBackStack()
+			}
+		}
+	)
 	
 	// Cargar datos al entrar en la pantalla
 	LaunchedEffect(Unit) {
@@ -153,16 +170,53 @@ fun EditedDatesBussinessScreenContent(navController: NavController) {
 	LaunchedEffect(businessState) {
 		when (businessState) {
 			is Resource.Success -> {
-				Toast.makeText(context, "Negocio actualizado correctamente", Toast.LENGTH_LONG).show()
-				navController.popBackStack()
-				viewModel.resetState()
+//				Toast.makeText(context, "Negocio actualizado correctamente", Toast.LENGTH_LONG).show()
+//				navController.popBackStack()
+//				viewModel.resetState()
 			}
 			is Resource.Error -> {
-				Toast.makeText(context, (businessState as Resource.Error).message, Toast.LENGTH_LONG).show()
+//				Toast.makeText(context, (businessState as Resource.Error).message, Toast.LENGTH_LONG).show()
 			}
 			else -> Unit
 		}
 	}
+	
+	if (showConfirmDialog) {
+		AppConfirmDialog(
+			title = "Confirmar actualización",
+			message = "¿Estás seguro de que deseas guardar los cambios de tu negocio?",
+			confirmText = "Guardar",
+			cancelText = "Cancelar",
+			onConfirm = {
+				val categories = selectedCategories.map { category ->
+					Category(
+						name = category,
+						products = productList.filter { product ->
+							categoryProductList.find { it.name == category }?.products?.contains(product) == true
+						}
+					)
+				}
+				
+				val updates = mapOf(
+					"name" to businessName,
+					"phone" to businessPhone,
+					"direction" to businessAddress,
+					"description" to businessDescription,
+					"categories" to categories.map { category ->
+						mapOf(
+							"name" to category.name,
+							"products" to category.products
+						)
+					},
+					"products" to productList
+				)
+				
+				viewModel.updateBusiness(updates)
+			},
+			onDismiss = { showConfirmDialog = false }
+		)
+	}
+	
 	
 	Scaffold(
 		topBar = {
@@ -262,6 +316,9 @@ fun EditedDatesBussinessScreenContent(navController: NavController) {
 											selectedCategories.add(category)
 											productList.addAll(getProductsForCategory(category))
 										}
+										categoryError = if (selectedCategories.isEmpty()) {
+											"Debes seleccionar al menos 1 categoría"
+										} else null
 										expanded = false
 									}
 								)
@@ -372,24 +429,44 @@ fun EditedDatesBussinessScreenContent(navController: NavController) {
 					}
 					
 					
-					// Teléfono
+					if (categoryError != null) {
+						Text(
+							text = categoryError!!,
+							color = Color.Red,
+							fontSize = 12.sp
+						)
+					}
+					
 					OutlinedTextField(
 						value = businessPhone,
-						onValueChange = { businessPhone = it },
+						onValueChange = {
+							businessPhone = it
+							phoneError = if (businessPhone.length !in 8..12) {
+								"El teléfono debe tener entre 8 y 12 dígitos"
+							} else null
+						},
 						label = { Text("Teléfono") },
 						leadingIcon = { Icon(Icons.Default.Phone, contentDescription = null) },
 						singleLine = true,
-						minLines = 1,
 						keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-						shape = RoundedCornerShape(16.dp),
+						isError = phoneError != null,
 						modifier = Modifier.fillMaxWidth()
 					)
+					
+					if (phoneError != null) {
+						Text(
+							text = phoneError!!,
+							color = Color.Red,
+							fontSize = 12.sp
+						)
+					}
 					
 					// Dirección
 					OutlinedTextField(
 						value = businessAddress,
 						onValueChange = { businessAddress = it },
 						label = { Text("Dirección") },
+						maxLines = 3,
 						leadingIcon = { Icon(Icons.Default.LocationOn, contentDescription = null) },
 						trailingIcon = {
 							Icon(
@@ -576,38 +653,34 @@ fun EditedDatesBussinessScreenContent(navController: NavController) {
 					
 					Button(
 						onClick = {
-							// ✅ Convertir categorías seleccionadas a objetos Category
-							val categories = selectedCategories.map { category ->
-								Category(
-									name = category,
-									products = productList.filter { product ->
-										categoryProductList.find { it.name == category }?.products?.contains(product) == true
-									}
-								)
+							var isValid = true
+							
+							// Validar categorías
+							if (selectedCategories.isEmpty()) {
+								categoryError = "Debes seleccionar al menos 1 categoría"
+								isValid = false
+							} else {
+								categoryError = null
 							}
 							
-							// ✅ Crear el mapa de actualizaciones compatible con Firestore
-							val updates = mapOf(
-								"name" to businessName,
-								"phone" to businessPhone,
-								"direction" to businessAddress,
-								"description" to businessDescription,
-								"categories" to categories.map { category ->
-									mapOf(
-										"name" to category.name,
-										"products" to category.products
-									)
-								},
-								"products" to productList
-							)
+							// Validar teléfono
+							if (businessPhone.length !in 8..12) {
+								phoneError = "El teléfono debe tener entre 8 y 12 dígitos"
+								isValid = false
+							} else {
+								phoneError = null
+							}
 							
-							viewModel.updateBusiness(updates)
+							if (isValid) {
+								showConfirmDialog = true
+							}
 						},
 						modifier = Modifier.fillMaxWidth(),
 						shape = RoundedCornerShape(16.dp)
 					) {
 						Text("Guardar cambios")
 					}
+					
 					
 					
 				}

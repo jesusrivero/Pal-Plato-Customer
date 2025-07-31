@@ -7,6 +7,7 @@ data class Business(
 	val direction: String = "",
 	val phone: String = "",
 	val description: String = "",
+	val state: Boolean = true,
 	val products: List<String> = emptyList(),
 	val date: Long = System.currentTimeMillis(),
 	val logoUrl: String? = null,

@@ -2,7 +2,6 @@ package com.techcode.palplato.presentation.ui.bussines
 
 import android.net.Uri
 import android.os.Build
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
@@ -89,6 +88,7 @@ import com.techcode.palplato.domain.model.BusinessSchedule
 import com.techcode.palplato.domain.model.Category
 import com.techcode.palplato.domain.viewmodels.auth.BusinessViewModel
 import com.techcode.palplato.presentation.navegation.AppRoutes
+import com.techcode.palplato.utils.AppAlertDialog
 import com.techcode.palplato.utils.Resource
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.time.timepicker
@@ -126,7 +126,8 @@ fun CreateBussinessContent(navController: NavController) {
 	var productInput by remember { mutableStateOf("") }
 	val selectedCategories = remember { mutableStateListOf<String>() }
 	val productList = remember { mutableStateListOf<String>() }
-	
+	var categoryError by remember { mutableStateOf<String?>(null) }
+	var phoneError by remember { mutableStateOf<String?>(null) }
 	// Horarios
 	val daysOfWeek = listOf("Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo")
 	val openingHours = remember { mutableStateMapOf<String, LocalTime?>() }
@@ -142,15 +143,26 @@ fun CreateBussinessContent(navController: NavController) {
 		logoUri = uri
 	}
 	
+	AppAlertDialog(
+		state = businessState,
+		onDismiss = {
+			viewModel.resetState()
+			// Si quieres cerrar la pantalla después de éxito:
+			if (businessState is Resource.Success) {
+				navController.popBackStack()
+			}
+		}
+	)
+	
 	LaunchedEffect(businessState) {
 		when (businessState) {
 			is Resource.Success -> {
-				Toast.makeText(context, "Negocio creado correctamente", Toast.LENGTH_LONG).show()
+//				Toast.makeText(context, "Negocio creado correctamente", Toast.LENGTH_LONG).show()
 				navController.navigate(AppRoutes.MainScreen)
-				viewModel.resetState()
+//				viewModel.resetState()
 			}
 			is Resource.Error -> {
-				Toast.makeText(context, (businessState as Resource.Error).message, Toast.LENGTH_LONG).show()
+//				Toast.makeText(context, (businessState as Resource.Error).message, Toast.LENGTH_LONG).show()
 			}
 			else -> Unit
 		}
@@ -235,6 +247,9 @@ fun CreateBussinessContent(navController: NavController) {
 											selectedCategories.add(category)
 											productList.addAll(getProductsForCategory(category))
 										}
+										categoryError = if (selectedCategories.isEmpty()) {
+											"Debes seleccionar al menos 1 categoría"
+										} else null
 										expanded = false
 									}
 								)
@@ -345,18 +360,37 @@ fun CreateBussinessContent(navController: NavController) {
 					}
 					
 					
-					// Teléfono
+					if (categoryError != null) {
+						Text(
+							text = categoryError!!,
+							color = Color.Red,
+							fontSize = 12.sp
+						)
+					}
+					
 					OutlinedTextField(
 						value = businessPhone,
-						onValueChange = { businessPhone = it },
+						onValueChange = {
+							businessPhone = it
+							phoneError = if (businessPhone.length !in 8..12) {
+								"El teléfono debe tener entre 8 y 12 dígitos"
+							} else null
+						},
 						label = { Text("Teléfono") },
 						leadingIcon = { Icon(Icons.Default.Phone, contentDescription = null) },
 						singleLine = true,
-						minLines = 1,
 						keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-						shape = RoundedCornerShape(16.dp),
+						isError = phoneError != null,
 						modifier = Modifier.fillMaxWidth()
 					)
+					
+					if (phoneError != null) {
+						Text(
+							text = phoneError!!,
+							color = Color.Red,
+							fontSize = 12.sp
+						)
+					}
 					
 					// Dirección
 					OutlinedTextField(
@@ -374,7 +408,7 @@ fun CreateBussinessContent(navController: NavController) {
 							)
 						},
 						singleLine = false,
-						minLines = 1,
+						minLines = 3,
 						shape = RoundedCornerShape(16.dp),
 						modifier = Modifier.fillMaxWidth()
 					)
