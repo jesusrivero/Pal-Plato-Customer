@@ -4,13 +4,18 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.techcode.palplato.data.repository.AuthRepositoryImpl
 import com.techcode.palplato.data.repository.BusinessRepositoryImpl
+import com.techcode.palplato.data.repository.ProductRepositoryImpl
 import com.techcode.palplato.domain.repository.AuthRepository
 import com.techcode.palplato.domain.repository.BusinessRepository
+import com.techcode.palplato.domain.repository.ProductRepository
 import com.techcode.palplato.domain.usecase.auth.LoginUseCase
 import com.techcode.palplato.domain.usecase.auth.RegisterUseCase
 import com.techcode.palplato.domain.usecase.auth.bussiness.CreateBusinessUseCase
 import com.techcode.palplato.domain.usecase.auth.bussiness.GetBusinessUseCase
 import com.techcode.palplato.domain.usecase.auth.bussiness.UpdateBusinessUseCase
+import com.techcode.palplato.domain.usecase.auth.bussiness.products.CreateProductUseCase
+import com.techcode.palplato.domain.usecase.auth.bussiness.products.GetProductsUseCase
+import com.techcode.palplato.domain.usecase.auth.bussiness.products.UpdateProductUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -74,5 +79,30 @@ object AppModule {
 	@Singleton
 	fun provideGetBusinessUseCase(repository: BusinessRepository): GetBusinessUseCase {
 		return GetBusinessUseCase(repository)
+	}
+	
+	@Provides
+	@Singleton
+	fun provideProductRepository(
+		firestore: FirebaseFirestore
+	): ProductRepository = ProductRepositoryImpl(firestore)
+	
+	@Provides
+	@Singleton
+	fun provideCreateProductUseCase(
+		repository: ProductRepository
+	): CreateProductUseCase = CreateProductUseCase(repository)
+	
+	@Provides
+	@Singleton
+	fun provideGetProductsUseCase(repository: ProductRepository): GetProductsUseCase {
+		return GetProductsUseCase(repository)
+	}
+	
+	
+	@Provides
+	@Singleton
+	fun provideUpdateProductUseCase(productRepository: ProductRepository): UpdateProductUseCase {
+		return UpdateProductUseCase(productRepository)
 	}
 }

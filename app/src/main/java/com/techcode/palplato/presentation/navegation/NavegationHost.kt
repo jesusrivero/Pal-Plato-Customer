@@ -6,6 +6,9 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
+import com.techcode.palplato.presentation.navegation.AppRoutes.EditedMenuRoute
+import com.techcode.palplato.presentation.navegation.AppRoutes.MenuScreen
 import com.techcode.palplato.presentation.ui.bussines.CreateBussinessScreen
 import com.techcode.palplato.presentation.ui.auth.LoginScreen
 import com.techcode.palplato.presentation.ui.auth.RecoverPasswordScreen
@@ -46,9 +49,26 @@ fun NavegationHost(){
 			SplashScreen(navController = navController)
 		}
 		
-		composable<AppRoutes.MenuScreen> {
-		MenuScreen(navController = navController)
+		composable<MenuScreen> {
+			MenuScreen(navController = navController)
 		}
+		
+		composable<EditedMenuRoute> { backStackEntry ->
+			val args = backStackEntry.toRoute<EditedMenuRoute>()
+			EditedMenuScreen(
+				navController = navController,
+				productId = args.productId
+			)
+		}
+		
+//
+//		composable<AppRoutes.MenuScreen> {
+//		MenuScreen(navController = navController)
+//		}
+//
+//		composable<AppRoutes.EditedMenuScreen> {
+//			EditedMenuScreen(navController = navController)
+//		}
 		
 		composable<AppRoutes.OrderScreen> {
 			OrderScreen(navController = navController)
@@ -87,9 +107,7 @@ fun NavegationHost(){
 		}
 		
 		
-		composable<AppRoutes.EditedMenuScreen> {
-			EditedMenuScreen(navController = navController)
-		}
+	
 		
 		composable<AppRoutes.EditedProfileScreen> {
 			EditedProfileScreen(navController = navController)

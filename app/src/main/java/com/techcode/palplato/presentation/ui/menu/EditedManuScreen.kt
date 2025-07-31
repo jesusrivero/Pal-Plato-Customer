@@ -10,14 +10,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -29,10 +27,10 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -40,11 +38,12 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -56,31 +55,44 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
-import com.techcode.palplato.R
-import com.techcode.palplato.presentation.ui.commons.BottomNavigationBar
+import com.techcode.palplato.domain.model.Product
+import com.techcode.palplato.domain.viewmodels.auth.ProductViewModel
+import com.techcode.palplato.utils.AppAlertDialog
+import com.techcode.palplato.utils.Resource
 
 @Composable
-fun EditedMenuScreen(	navController: NavController){
+fun EditedMenuScreen(
+	navController: NavController,
+	productId: String,
+	viewModel: ProductViewModel = hiltViewModel()
+) {
+	LaunchedEffect(productId) {
+		viewModel.getProduct(productId)
+	}
 	
-	EditedMenuScreenContent(navController = navController,)
+	val selectedProduct by viewModel.selectedProduct.collectAsState()
 	
+	EditedMenuScreenContent(
+		navController = navController,
+		selectedProduct = selectedProduct
+	)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditedMenuScreenContent(navController: NavController) {
+fun EditedMenuScreenContent(
+	navController: NavController,
+	selectedProduct: Product?,
+	viewModel: ProductViewModel = hiltViewModel()
+) {
 	var dishName by rememberSaveable { mutableStateOf("") }
 	var description by rememberSaveable { mutableStateOf("") }
 	var price by rememberSaveable { mutableStateOf("") }
-	var additionalIngredients by rememberSaveable { mutableStateOf("") }
 	var selectedCategory by rememberSaveable { mutableStateOf("") }
 	val categoryOptions = listOf("Entradas", "Plato fuerte", "Postres", "Bebidas")
 	var expanded by remember { mutableStateOf(false) }
@@ -97,22 +109,43 @@ fun EditedMenuScreenContent(navController: NavController) {
 	var ingredienteInput by remember { mutableStateOf("") }
 	val ingredientesPrincipales = remember { mutableStateListOf<String>() }
 	
+	// Estado de actualización
+	val updateState by viewModel.updateState.collectAsState()
+	
+	// Autocompletar datos cuando se carga el producto
+	LaunchedEffect(selectedProduct) {
+		selectedProduct?.let {
+			dishName = it.name
+			description = it.description
+			price = it.price.toString()
+			selectedCategory = it.category
+			ingredientesPrincipales.clear()
+			ingredientesPrincipales.addAll(it.ingredients)
+			selectedImageUri = it.imageUrl.takeIf { url -> url.isNotBlank() }?.let { Uri.parse(it) }
+		}
+	}
+	
+	// Mostrar el diálogo reutilizable de feedback
+	AppAlertDialog(
+		state = updateState,
+		onDismiss = {
+			viewModel.resetUpdateState() // Limpiar estado en el ViewModel
+			if (updateState is Resource.Success) {
+				navController.popBackStack() // Volver atrás solo si fue exitoso
+			}
+		}
+	)
+	
+	
+	
+	
 	Scaffold(
 		topBar = {
 			CenterAlignedTopAppBar(
-				title = { Text("Editar menu", style = MaterialTheme.typography.titleMedium) },
+				title = { Text("Editar menú", style = MaterialTheme.typography.titleMedium) },
 				navigationIcon = {
 					IconButton(onClick = { navController.popBackStack() }) {
 						Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
-					}
-				},
-				actions = {
-					IconButton(onClick = { /* Acción de notificaciones */ }) {
-						Icon(
-							painter = painterResource(id = R.drawable.ic_notification),
-							contentDescription = "Notificaciones",
-							modifier = Modifier.size(25.dp)
-						)
 					}
 				}
 			)
@@ -125,7 +158,6 @@ fun EditedMenuScreenContent(navController: NavController) {
 				.verticalScroll(rememberScrollState()),
 			verticalArrangement = Arrangement.spacedBy(12.dp)
 		) {
-			
 			// Imagen seleccionada
 			Box(
 				modifier = Modifier
@@ -153,101 +185,26 @@ fun EditedMenuScreenContent(navController: NavController) {
 				}
 			}
 			
-			Text(
-				text = "Agregar imagen del plato",
-				style = MaterialTheme.typography.bodyMedium,
-				modifier = Modifier.align(Alignment.CenterHorizontally)
-			)
-			
 			OutlinedTextField(
 				value = dishName,
 				onValueChange = { dishName = it },
 				label = { Text("Nombre del plato") },
-				shape = RoundedCornerShape(16.dp),
-				placeholder = { Text("Ej. Arepa Reina Pepiada") },
 				modifier = Modifier.fillMaxWidth()
 			)
-			
-			// Ingredientes principales
-			OutlinedTextField(
-				value = ingredienteInput,
-				onValueChange = { ingredienteInput = it },
-				label = { Text("Ingrediente principal") },
-				trailingIcon = {
-					Icon(
-						imageVector = Icons.Default.Add,
-						contentDescription = "Agregar ingrediente",
-						modifier = Modifier
-							.clickable {
-								if (ingredienteInput.isNotBlank()) {
-									ingredientesPrincipales.add(ingredienteInput.trim())
-									ingredienteInput = ""
-								}
-							}
-							.padding(4.dp)
-					)
-				},
-				minLines = 1,
-				shape = RoundedCornerShape(16.dp),
-				modifier = Modifier.fillMaxWidth()
-			)
-			
-			FlowRow(
-				horizontalArrangement = Arrangement.spacedBy(8.dp),
-				verticalArrangement = Arrangement.spacedBy(8.dp)
-			) {
-				ingredientesPrincipales.forEach { ingrediente ->
-					AssistChip(
-						onClick = {},
-						label = {
-							Text(
-								text = ingrediente,
-								fontSize = 10.sp,
-								maxLines = 1,
-								modifier = Modifier.widthIn(min = 10.dp)
-							)
-						},
-						trailingIcon = {
-							Icon(
-								imageVector = Icons.Default.Close,
-								contentDescription = "Eliminar ingrediente",
-								modifier = Modifier
-									.size(12.dp)
-									.clickable {
-										ingredientesPrincipales.remove(ingrediente)
-									}
-							)
-						},
-						modifier = Modifier
-							.height(30.dp)
-							.defaultMinSize(minWidth = 30.dp),
-						shape = RoundedCornerShape(16.dp),
-						colors = AssistChipDefaults.assistChipColors(
-							containerColor = colorScheme.primaryContainer,
-							labelColor = colorScheme.onPrimaryContainer
-						)
-					)
-				}
-			}
 			
 			OutlinedTextField(
 				value = price,
 				onValueChange = { price = it },
 				label = { Text("Precio") },
-				shape = RoundedCornerShape(16.dp),
-				placeholder = { Text("$.") },
 				keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
 				modifier = Modifier.fillMaxWidth()
 			)
 			
 			OutlinedTextField(
-				value = additionalIngredients,
-				onValueChange = { additionalIngredients = it },
-				label = { Text("Descripcion") },
-				shape = RoundedCornerShape(16.dp),
-				modifier = Modifier
-					.fillMaxWidth()
-					.height(100.dp)
+				value = description,
+				onValueChange = { description = it },
+				label = { Text("Descripción") },
+				modifier = Modifier.fillMaxWidth().height(100.dp)
 			)
 			
 			ExposedDropdownMenuBox(
@@ -259,19 +216,12 @@ fun EditedMenuScreenContent(navController: NavController) {
 					onValueChange = {},
 					readOnly = true,
 					label = { Text("Categoría") },
-					shape = RoundedCornerShape(16.dp),
-					trailingIcon = {
-						ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
-					},
-					modifier = Modifier
-						.fillMaxWidth()
-						.menuAnchor()
+					trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+					modifier = Modifier.fillMaxWidth().menuAnchor()
 				)
 				
 				ExposedDropdownMenu(
 					expanded = expanded,
-					shape = RoundedCornerShape(16.dp),
-					modifier = Modifier.background(colorScheme.surfaceVariant),
 					onDismissRequest = { expanded = false }
 				) {
 					categoryOptions.forEach { category ->
@@ -286,28 +236,81 @@ fun EditedMenuScreenContent(navController: NavController) {
 				}
 			}
 			
+			// Ingredientes
+			OutlinedTextField(
+				value = ingredienteInput,
+				onValueChange = { ingredienteInput = it },
+				label = { Text("Ingrediente principal") },
+				trailingIcon = {
+					Icon(
+						imageVector = Icons.Default.Add,
+						contentDescription = "Agregar ingrediente",
+						modifier = Modifier.clickable {
+							if (ingredienteInput.isNotBlank()) {
+								ingredientesPrincipales.add(ingredienteInput.trim())
+								ingredienteInput = ""
+							}
+						}
+					)
+				},
+				modifier = Modifier.fillMaxWidth()
+			)
+			
+			FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+				ingredientesPrincipales.forEach { ingrediente ->
+					AssistChip(
+						onClick = {},
+						label = { Text(ingrediente) },
+						trailingIcon = {
+							Icon(
+								imageVector = Icons.Default.Close,
+								contentDescription = "Eliminar",
+								modifier = Modifier.clickable {
+									ingredientesPrincipales.remove(ingrediente)
+								}
+							)
+						}
+					)
+				}
+			}
+			
 			Button(
 				onClick = {
-				
+					selectedProduct?.let {
+						val updatedProduct = it.copy(
+							name = dishName,
+							description = description,
+							price = price.toDoubleOrNull() ?: 0.0,
+							category = selectedCategory,
+							ingredients = ingredientesPrincipales,
+							imageUrl = selectedImageUri?.toString() ?: it.imageUrl
+						)
+						viewModel.updateProduct(updatedProduct)
+					}
 				},
-				modifier = Modifier
-					.fillMaxWidth()
-					.padding(top = 8.dp),
-				colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFC107)),
-				shape = RoundedCornerShape(12.dp)
+				modifier = Modifier.fillMaxWidth(),
+				colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFC107))
 			) {
-				Icon(imageVector = Icons.Default.Check, contentDescription = null, tint = Color.Black)
-				Spacer(modifier = Modifier.width(8.dp))
-				Text("Agregar al menú", color = Color.Black)
+				if (updateState is Resource.Loading) {
+					CircularProgressIndicator(
+						modifier = Modifier.size(24.dp),
+						color = Color.Black
+					)
+				} else {
+					Icon(Icons.Default.Check, contentDescription = null, tint = Color.Black)
+					Spacer(modifier = Modifier.width(8.dp))
+					Text("Guardar cambios", color = Color.Black)
+				}
 			}
 		}
 	}
 }
 
-@Preview(showBackground = true)
-@Composable
-fun EditedMenuScreenPreview() {
-	
-	val navController = rememberNavController()
-	EditedMenuScreenContent(navController = navController)
-}
+
+//@Preview(showBackground = true)
+//@Composable
+//fun EditedMenuScreenPreview() {
+//
+//	val navController = rememberNavController()
+//	EditedMenuScreenContent(navController = navController)
+//}

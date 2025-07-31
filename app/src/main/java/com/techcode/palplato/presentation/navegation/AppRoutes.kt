@@ -15,6 +15,16 @@ object AppRoutes {
 	data object MenuScreen
 	
 	@Serializable
+	data class EditedMenuRoute(val productId: String) // <
+
+
+//	@Serializable
+//	data object MenuScreen
+//
+//	@Serializable
+//	data object EditedMenuScreen
+	
+	@Serializable
 	data object CreateBussinessScreen
 	
 //	@Serializable
@@ -43,9 +53,6 @@ object AppRoutes {
 	
 	@Serializable
 	data object CreateMenuScreen
-	
-	@Serializable
-	data object EditedMenuScreen
 	
 	@Serializable
 	data object EditedProfileScreen
