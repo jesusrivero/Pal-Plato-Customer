@@ -62,33 +62,19 @@ fun OrderScreen(	navController: NavController){
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OrderScreenContent(navController: NavController) {
-	val pedidos = listOf(
-		Pedido("Alejandro", "#1234", com.techcode.palplato.R.drawable.ic_hamburguesa),
-		Pedido("Sofía", "#5678", com.techcode.palplato.R.drawable.ic_hamburguesa),
-		Pedido("Ricardo", "#9012", com.techcode.palplato.R.drawable.ic_hamburguesa),
-		Pedido("Isabella", "#3456", com.techcode.palplato.R.drawable.ic_hamburguesa),
-		Pedido("Gabriel", "#7890", com.techcode.palplato.R.drawable.ic_hamburguesa),
-		Pedido("Alejandro", "#1234", com.techcode.palplato.R.drawable.ic_hamburguesa),
-		Pedido("Sofía", "#5678", com.techcode.palplato.R.drawable.ic_hamburguesa),
-		Pedido("Ricardo", "#9012", com.techcode.palplato.R.drawable.ic_hamburguesa),
-		Pedido("Isabella", "#3456", com.techcode.palplato.R.drawable.ic_hamburguesa),
-		Pedido("Gabriel", "#7890", com.techcode.palplato.R.drawable.ic_hamburguesa),
-		Pedido("Alejandro", "#1234", com.techcode.palplato.R.drawable.ic_hamburguesa),
-		Pedido("Sofía", "#5678", com.techcode.palplato.R.drawable.ic_hamburguesa),
-		Pedido("Ricardo", "#9012", com.techcode.palplato.R.drawable.ic_hamburguesa),
-		Pedido("Isabella", "#3456", com.techcode.palplato.R.drawable.ic_hamburguesa),
-		Pedido("Gabriel", "#7890", com.techcode.palplato.R.drawable.ic_hamburguesa),
-		Pedido("Alejandro", "#1234", com.techcode.palplato.R.drawable.ic_hamburguesa),
-		Pedido("Sofía", "#5678", com.techcode.palplato.R.drawable.ic_hamburguesa),
-		Pedido("Ricardo", "#9012", com.techcode.palplato.R.drawable.ic_hamburguesa),
-		Pedido("Isabella", "#3456", com.techcode.palplato.R.drawable.ic_hamburguesa),
-		Pedido("Gabriel", "#7890", com.techcode.palplato.R.drawable.ic_hamburguesa),
-		Pedido("Alejandro", "#1234", com.techcode.palplato.R.drawable.ic_hamburguesa),
-		Pedido("Sofía", "#5678", com.techcode.palplato.R.drawable.ic_hamburguesa),
-		Pedido("Ricardo", "#9012", com.techcode.palplato.R.drawable.ic_hamburguesa),
-		Pedido("Isabella", "#3456", com.techcode.palplato.R.drawable.ic_hamburguesa),
-		Pedido("Gabriel", "#7890", com.techcode.palplato.R.drawable.ic_hamburguesa),
-	)
+	
+	val estados = listOf("pending", "accepted", "preparing", "ready", "delivered", "rejected", "canceled")
+	
+	val pedidos = List(25) { index ->
+		val nombres = listOf("Alejandro", "Sofía", "Ricardo", "Isabella", "Gabriel")
+		val cliente = nombres[index % nombres.size]
+		val detalle = "#${1000 + index}"
+		val estado = estados.random()
+		Pedido(cliente, detalle, com.techcode.palplato.R.drawable.ic_hamburguesa, estado)
+	}
+	
+	
+
 	
 	Scaffold(
 		topBar = {
@@ -127,6 +113,17 @@ fun OrderScreenContent(navController: NavController) {
 
 @Composable
 fun PedidoItem(pedido: Pedido, onClick: () -> Unit) {
+	val (statusColor, statusLabel) = when (pedido.estado) {
+		"pending" -> Color(0xFFFFC107) to "Pendiente"
+		"accepted" -> Color(0xFF1565C0) to "Aceptado"
+		"preparing" -> Color(0xFFFF9800) to "Preparando"
+		"ready" -> Color(0xFF4CAF50) to "Listo"
+		"delivered" -> Color(0xFF2E7D32) to "Entregado"
+		"rejected" -> Color(0xFFD32F2F) to "Rechazado"
+		"canceled" -> Color(0xFF9E9E9E) to "Cancelado"
+		else -> Color.Gray to "Desconocido"
+	}
+	
 	Row(
 		modifier = Modifier
 			.fillMaxWidth()
@@ -145,10 +142,7 @@ fun PedidoItem(pedido: Pedido, onClick: () -> Unit) {
 		
 		Spacer(modifier = Modifier.width(12.dp))
 		
-		Column(
-			modifier = Modifier
-				.weight(1f)
-		) {
+		Column(modifier = Modifier.weight(1f)) {
 			Text(
 				text = "Cliente: ${pedido.cliente}",
 				fontWeight = FontWeight.SemiBold,
@@ -160,14 +154,31 @@ fun PedidoItem(pedido: Pedido, onClick: () -> Unit) {
 				style = MaterialTheme.typography.bodySmall
 			)
 		}
+		
+		Row(verticalAlignment = Alignment.CenterVertically) {
+			Box(
+				modifier = Modifier
+					.size(14.dp)
+					.background(statusColor, CircleShape)
+			)
+			Spacer(modifier = Modifier.width(6.dp))
+			Text(
+				text = statusLabel,
+				style = MaterialTheme.typography.bodySmall,
+				color = Color.Gray
+			)
+		}
 	}
 }
+
 
 data class Pedido(
 	val cliente: String,
 	val detalle: String,
-	@DrawableRes val imagen: Int
+	@DrawableRes val imagen: Int,
+	val estado: String // Nuevo campo
 )
+
 
 
 
