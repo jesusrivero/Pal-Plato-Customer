@@ -12,71 +12,65 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val LightColorScheme = lightColorScheme(
-	primary = Color(0xFF1565C0),              // Azul profesional
-	onPrimary = Color.White,
-	primaryContainer = Color(0xFFE3F2FD),      // Azul muy claro
-	onPrimaryContainer = Color(0xFF003C8F),
-
-	secondary = Color(0xFF455A64),            // Gris azulado
+	primary = Color(0xFFFFC107),              // Amarillo (botones, barra inferior)
+	onPrimary = Color.Black,
+	primaryContainer = Color(0xFFFFECB3),
+	onPrimaryContainer = Color(0xFF3E2F00),
+	
+	secondary = Color(0xFFE64A19),            // Naranja/rojo para acciones
 	onSecondary = Color.White,
-	secondaryContainer = Color(0xFFCFD8DC),
-	onSecondaryContainer = Color(0xFF263238),
-
-	tertiary = Color(0xFF90A4AE),             // Gris claro para detalles
-	onTertiary = Color.Black,
-	tertiaryContainer = Color(0xFFECEFF1),
-	onTertiaryContainer = Color(0xFF263238),
-
+	secondaryContainer = Color(0xFFFFCCBC),
+	onSecondaryContainer = Color(0xFF4A1F0F),
+	
+	tertiary = Color(0xFFF5F5F5),             // Gris claro para fondos secundarios
+	onTertiary = Color(0xFF212121),
+	
 	error = Color(0xFFD32F2F),
 	onError = Color.White,
-	errorContainer = Color(0xFFFFCDD2),
-	onErrorContainer = Color(0xFFB71C1C),
-
-	background = Color(0xFFFDFDFD),           // Blanco puro, limpio
-	onBackground = Color(0xFF1C1C1C),
-
-	surface = Color(0xFFFFFFFF),              // Blanco para tarjetas y scaffold
-	onSurface = Color(0xFF1C1C1C),
-
-	surfaceVariant = Color(0xFFF0F0F0),       // Gris muy claro
-	onSurfaceVariant = Color(0xFF3A3A3A),
-
-	outline = Color(0xFFB0BEC5)               // Gris suave para bordes
+	
+	background = Color(0xFFFFFFFF),
+	onBackground = Color(0xFF212121),
+	
+	surface = Color(0xFFFFFFFF),
+	onSurface = Color(0xFF212121),
+	
+	surfaceVariant = Color(0xFFF0F0F0),
+	onSurfaceVariant = Color(0xFF424242),
+	
+	outline = Color(0xFFBDBDBD)
 )
 
 
 private val DarkColorScheme = darkColorScheme(
-	primary = Color(0xFF90CAF9),
+	primary = Color(0xFFFFC107),
 	onPrimary = Color.Black,
-	primaryContainer = Color(0xFF1565C0),
-	onPrimaryContainer = Color.White,
-
-	secondary = Color(0xFFB0BEC5),
-	onSecondary = Color.Black,
-	secondaryContainer = Color(0xFF455A64),
-	onSecondaryContainer = Color.White,
-
-	tertiary = Color(0xFFCFD8DC),
-	onTertiary = Color.Black,
-	tertiaryContainer = Color(0xFF607D8B),
-	onTertiaryContainer = Color.White,
-
+	primaryContainer = Color(0xFF795600),
+	onPrimaryContainer = Color(0xFFFFECB3),
+	
+	secondary = Color(0xFFE64A19),
+	onSecondary = Color.White,
+	secondaryContainer = Color(0xFF5D1900),
+	onSecondaryContainer = Color(0xFFFFCCBC),
+	
+	tertiary = Color(0xFF2C2C2C),
+	onTertiary = Color.White,
+	
 	error = Color(0xFFEF9A9A),
 	onError = Color(0xFF370001),
-	errorContainer = Color(0xFF8C1D18),
-	onErrorContainer = Color(0xFFFFDAD4),
-
+	
 	background = Color(0xFF121212),
 	onBackground = Color(0xFFE0E0E0),
-
+	
 	surface = Color(0xFF1E1E1E),
 	onSurface = Color(0xFFE0E0E0),
-
+	
 	surfaceVariant = Color(0xFF2E2E2E),
 	onSurfaceVariant = Color(0xFFCCCCCC),
-
-	outline = Color(0xFF757575)
+	
+	outline = Color(0xFF8D6E63)
 )
+
+
 
 //private val LightColorScheme = lightColorScheme(
 //	primary = Color(0xFFFF5722),              // Naranja intenso (principal)

@@ -164,6 +164,7 @@ fun BottomNavigationBar(
 	val ordersRoute = navRoute<AppRoutes.OrderScreen>()
 	val reportsRoute = navRoute<AppRoutes.ReporstScreen>()
 	val settingsRoute = navRoute<AppRoutes.SettingsScreen>()
+	val customBlue = Color(0xFFD0A424) // Color personalizado
 	
 	Surface(
 		tonalElevation = 6.dp,
@@ -172,8 +173,8 @@ fun BottomNavigationBar(
 		modifier = modifier
 	) {
 		NavigationBar(
-			containerColor = MaterialTheme.colorScheme.surface,
-			contentColor = MaterialTheme.colorScheme.onSurface,
+			containerColor = customBlue, // Cambiar color de fondo
+			contentColor = Color.White,
 			tonalElevation = 0.dp
 		) {
 			val items = listOf(
@@ -194,7 +195,7 @@ fun BottomNavigationBar(
 									modifier = Modifier
 										.size(36.dp)
 										.background(
-											color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+											color = Color.White.copy(alpha = 0.15f),
 											shape = CircleShape
 										)
 								)
@@ -203,10 +204,7 @@ fun BottomNavigationBar(
 								painter = painterResource(id = icon),
 								contentDescription = label,
 								modifier = Modifier.size(22.dp),
-								tint = if (selected)
-									MaterialTheme.colorScheme.primary
-								else
-									MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+								tint = if (selected) Color.White else Color.White.copy(alpha = 0.7f)
 							)
 						}
 					},
@@ -215,7 +213,7 @@ fun BottomNavigationBar(
 							Text(
 								label,
 								style = MaterialTheme.typography.labelMedium,
-								color = MaterialTheme.colorScheme.primary
+								color = Color.White
 							)
 						}
 					},
@@ -223,10 +221,10 @@ fun BottomNavigationBar(
 					onClick = { navigateIfNeeded(navController, route, currentRoute) },
 					alwaysShowLabel = false,
 					colors = NavigationBarItemDefaults.colors(
-						selectedIconColor = MaterialTheme.colorScheme.primary,
-						selectedTextColor = MaterialTheme.colorScheme.primary,
-						unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-						unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+						selectedIconColor = Color.White,
+						selectedTextColor = Color.White,
+						unselectedIconColor = Color.White.copy(alpha = 0.7f),
+						unselectedTextColor = Color.White.copy(alpha = 0.6f),
 						indicatorColor = Color.Transparent
 					)
 				)
