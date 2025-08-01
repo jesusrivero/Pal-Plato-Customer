@@ -9,4 +9,7 @@ interface AuthRepository {
 	suspend fun registerUser(user: User, password: String): Flow<Resource<AuthResult>>
 	
 	suspend fun loginUser(email: String, password: String): Flow<Resource<AuthResult>>
+	
+	suspend fun getBusinessIdForUser(uid: String): String?
+	suspend fun syncUserEmailIfNeeded(): Result<Unit> // ✅ NUEVA FUNCIÓN
 }

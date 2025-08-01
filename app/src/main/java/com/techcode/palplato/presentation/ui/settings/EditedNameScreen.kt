@@ -9,7 +9,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -19,18 +21,28 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.techcode.palplato.R
+import com.techcode.palplato.domain.model.UserProfileUpdate
+import com.techcode.palplato.domain.viewmodels.auth.UserViewModel
+import com.techcode.palplato.utils.AppAlertDialog
+import com.techcode.palplato.utils.Resource
 
 
 @Composable
@@ -42,20 +54,49 @@ fun EditedNameScreen(	navController: NavController){
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditedNameScreenContent(navController: NavController) {
+fun EditedNameScreenContent(
+	navController: NavController,
+	viewModel: UserViewModel = hiltViewModel()
+) {
 	var firstName by rememberSaveable { mutableStateOf("") }
 	var lastName by rememberSaveable { mutableStateOf("") }
+	var email by rememberSaveable { mutableStateOf("") }
 	var password by rememberSaveable { mutableStateOf("") }
+	
+	var firstNameError by remember { mutableStateOf<String?>(null) }
+	var lastNameError by remember { mutableStateOf<String?>(null) }
+	var passwordError by remember { mutableStateOf<String?>(null) }
+	
+	val updateProfileState by viewModel.updateProfileState.collectAsState()
+	val userProfileState by viewModel.userProfileState.collectAsState()
+	
+	LaunchedEffect(Unit) {
+		viewModel.getUserProfile()
+	}
+	
+	LaunchedEffect(userProfileState) {
+		if (userProfileState is Resource.Success) {
+			val profile = (userProfileState as Resource.Success<UserProfileUpdate>).result
+			firstName = profile.name
+			lastName = profile.lastname
+			email= profile.email
+		}
+	}
+	// ✅ Mostrar feedback de actualización
+	AppAlertDialog(
+		state = updateProfileState,
+		onDismiss = {
+			viewModel.resetUpdateProfileState()
+			if (updateProfileState is Resource.Success) {
+				navController.popBackStack()
+			}
+		}
+	)
 	
 	Scaffold(
 		topBar = {
 			CenterAlignedTopAppBar(
-				title = {
-					Text(
-						text = "Nombre completo",
-						style = MaterialTheme.typography.titleMedium
-					)
-				},
+				title = { Text("Nombre completo", style = MaterialTheme.typography.titleMedium) },
 				navigationIcon = {
 					IconButton(onClick = { navController.popBackStack() }) {
 						Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
@@ -79,48 +120,99 @@ fun EditedNameScreenContent(navController: NavController) {
 				.padding(16.dp),
 			verticalArrangement = Arrangement.spacedBy(16.dp)
 		) {
-			
+			// Campo de nombres
 			OutlinedTextField(
 				value = firstName,
-				onValueChange = { firstName = it },
+				onValueChange = {
+					firstName = it
+					firstNameError = if (firstName.isBlank()) "El nombre es obligatorio" else null
+				},
 				label = { Text("Nombres") },
+				isError = firstNameError != null,
 				shape = RoundedCornerShape(16.dp),
 				singleLine = true,
 				modifier = Modifier.fillMaxWidth()
 			)
+			if (firstNameError != null) {
+				Text(firstNameError!!, color = Color.Red, fontSize = 12.sp)
+			}
 			
+			// Campo de apellidos
 			OutlinedTextField(
 				value = lastName,
-				onValueChange = { lastName = it },
+				onValueChange = {
+					lastName = it
+					lastNameError = if (lastName.isBlank()) "El apellido es obligatorio" else null
+				},
 				label = { Text("Apellidos") },
+				isError = lastNameError != null,
 				shape = RoundedCornerShape(16.dp),
 				singleLine = true,
 				modifier = Modifier.fillMaxWidth()
 			)
+			if (lastNameError != null) {
+				Text(lastNameError!!, color = Color.Red, fontSize = 12.sp)
+			}
 			
 			Divider()
 			
+			// Campo de contraseña actual
 			OutlinedTextField(
 				value = password,
-				onValueChange = { password = it },
+				onValueChange = {
+					password = it
+					passwordError = if (password.isBlank()) "La contraseña es obligatoria" else null
+				},
 				label = { Text("Contraseña actual") },
+				isError = passwordError != null,
 				shape = RoundedCornerShape(16.dp),
 				singleLine = true,
 				visualTransformation = PasswordVisualTransformation(),
 				modifier = Modifier.fillMaxWidth()
 			)
+			if (passwordError != null) {
+				Text(passwordError!!, color = Color.Red, fontSize = 12.sp)
+			}
 			
+			// Botón guardar cambios
 			Button(
 				onClick = {
-					// Aquí puedes validar los campos y realizar la operación
+					var isValid = true
+					if (firstName.isBlank()) {
+						firstNameError = "El nombre es obligatorio"
+						isValid = false
+					}
+					if (lastName.isBlank()) {
+						lastNameError = "El apellido es obligatorio"
+						isValid = false
+					}
+					if (password.isBlank()) {
+						passwordError = "La contraseña es obligatoria"
+						isValid = false
+					}
+					
+					if (isValid) {
+						// ✅ Llamada correcta al ViewModel con password incluido
+						viewModel.updateUserProfile(firstName, lastName,email, password)
+					}
 				},
-				modifier = Modifier.fillMaxWidth()
+				modifier = Modifier.fillMaxWidth(),
+				colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFC107))
 			) {
-				Text("Guardar cambios")
+				if (updateProfileState is Resource.Loading) {
+					CircularProgressIndicator(
+						modifier = Modifier.size(20.dp),
+						color = Color.Black
+					)
+				} else {
+					Text("Guardar cambios", color = Color.Black)
+				}
 			}
 		}
 	}
 }
+
+
 
 
 @Preview(showBackground = true)

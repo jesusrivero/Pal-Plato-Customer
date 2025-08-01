@@ -10,7 +10,6 @@ import javax.inject.Singleton
 class SessionManager @Inject constructor(
 	@ApplicationContext context: Context
 ) {
-	
 	private val prefs: SharedPreferences =
 		context.getSharedPreferences("session_prefs", Context.MODE_PRIVATE)
 	
@@ -20,9 +19,6 @@ class SessionManager @Inject constructor(
 		private const val KEY_BUSINESS_ID = "business_id"
 	}
 	
-	/**
-	 * Guardar sesión con UID.
-	 */
 	fun saveSession(uid: String) {
 		prefs.edit()
 			.putBoolean(KEY_IS_LOGGED_IN, true)
@@ -30,16 +26,10 @@ class SessionManager @Inject constructor(
 			.apply()
 	}
 	
-	/**
-	 * Verifica si hay sesión activa.
-	 */
 	fun isLoggedIn(): Boolean {
 		return prefs.getBoolean(KEY_IS_LOGGED_IN, false)
 	}
 	
-	/**
-	 * Limpiar sesión actual.
-	 */
 	fun clearSession() {
 		prefs.edit()
 			.putBoolean(KEY_IS_LOGGED_IN, false)
@@ -48,26 +38,19 @@ class SessionManager @Inject constructor(
 			.apply()
 	}
 	
-	/**
-	 * Obtener UID del usuario actual.
-	 */
+	/** ✅ UID del usuario actual */
 	fun getUserUid(): String? = prefs.getString(KEY_UID, null)
 	
-	/**
-	 * Guardar el ID del negocio.
-	 */
 	fun saveBusinessId(businessId: String) {
 		prefs.edit()
 			.putString(KEY_BUSINESS_ID, businessId)
 			.apply()
 	}
 	
-	/**
-	 * Obtener el ID del negocio actual.
-	 */
 	fun getBusinessId(): String? {
 		return prefs.getString(KEY_BUSINESS_ID, null)
 	}
 }
+
 
 

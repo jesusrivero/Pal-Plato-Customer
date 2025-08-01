@@ -269,19 +269,21 @@ fun RegisterScreenContent(
 				) {
 					Text("Crear Cuenta")
 				}
-				
 				when (registerState) {
 					is Resource.Loading -> {
 						CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
 					}
+					
 					is Resource.Success -> {
 						LaunchedEffect(Unit) {
-							navController.navigate(AppRoutes.LoginScreen) {
+							// ✅ Ir a crear negocio
+							navController.navigate(AppRoutes.CreateBussinessScreen) {
 								popUpTo(AppRoutes.RegisterScreen) { inclusive = true }
 							}
 							ViewModel.clearState()
 						}
 					}
+					
 					is Resource.Error -> {
 						val errorMsg = (registerState as Resource.Error).message
 						Text(
@@ -291,9 +293,35 @@ fun RegisterScreenContent(
 							modifier = Modifier.align(Alignment.CenterHorizontally)
 						)
 					}
+					
 					null -> {}
-					Resource.Idle -> TODO()
+					Resource.Idle -> {}
 				}
+
+//				when (registerState) {
+//					is Resource.Loading -> {
+//						CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+//					}
+//					is Resource.Success -> {
+//						LaunchedEffect(Unit) {
+//							navController.navigate(AppRoutes.CreateBussinessScreen) {
+//								popUpTo(AppRoutes.RegisterScreen) { inclusive = true }
+//							}
+//							ViewModel.clearState()
+//						}
+//					}
+//					is Resource.Error -> {
+//						val errorMsg = (registerState as Resource.Error).message
+//						Text(
+//							text = errorMsg,
+//							color = MaterialTheme.colorScheme.error,
+//							style = MaterialTheme.typography.bodySmall,
+//							modifier = Modifier.align(Alignment.CenterHorizontally)
+//						)
+//					}
+//					null -> {}
+//					Resource.Idle -> TODO()
+//				}
 				
 				Spacer(modifier = Modifier.height(16.dp))
 				

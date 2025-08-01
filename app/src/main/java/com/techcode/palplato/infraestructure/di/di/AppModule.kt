@@ -2,12 +2,16 @@ package com.techcode.palplato.infraestructure.di.di
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import com.techcode.palplato.data.repository.AuthRepositoryImpl
 import com.techcode.palplato.data.repository.BusinessRepositoryImpl
 import com.techcode.palplato.data.repository.ProductRepositoryImpl
+import com.techcode.palplato.data.repository.UserRepositoryImpl
+import com.techcode.palplato.data.repository.local.SessionManager
 import com.techcode.palplato.domain.repository.AuthRepository
 import com.techcode.palplato.domain.repository.BusinessRepository
 import com.techcode.palplato.domain.repository.ProductRepository
+import com.techcode.palplato.domain.repository.UserRepository
 import com.techcode.palplato.domain.usecase.auth.LoginUseCase
 import com.techcode.palplato.domain.usecase.auth.RegisterUseCase
 import com.techcode.palplato.domain.usecase.auth.bussiness.CreateBusinessUseCase
@@ -18,6 +22,10 @@ import com.techcode.palplato.domain.usecase.auth.bussiness.products.DeleteProduc
 import com.techcode.palplato.domain.usecase.auth.bussiness.products.GetProductsUseCase
 import com.techcode.palplato.domain.usecase.auth.bussiness.products.UpdateProductAvailabilityUseCase
 import com.techcode.palplato.domain.usecase.auth.bussiness.products.UpdateProductUseCase
+import com.techcode.palplato.domain.usecase.auth.bussiness.products.UploadProductImageUseCase
+import com.techcode.palplato.domain.usecase.auth.updateprofiledates.ReauthenticateUserUseCase
+import com.techcode.palplato.domain.usecase.auth.updateprofiledates.UpdateUserEmailUseCase
+import com.techcode.palplato.domain.usecase.auth.updateprofiledates.UpdateUserProfileUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -43,8 +51,9 @@ object AppModule {
 	fun provideAuthRepository(
 		firebaseAuth: FirebaseAuth,
 		firestore: FirebaseFirestore,
+		sessionManager: SessionManager
 	): AuthRepository {
-		return AuthRepositoryImpl(firebaseAuth, firestore)
+		return AuthRepositoryImpl(firebaseAuth, firestore, sessionManager)
 	}
 
 	@Provides
@@ -61,8 +70,11 @@ object AppModule {
 	
 	@Provides
 	@Singleton
-	fun provideBusinessRepository(firestore: FirebaseFirestore): BusinessRepository {
-		return BusinessRepositoryImpl(firestore)
+	fun provideBusinessRepository(
+		firestore: FirebaseFirestore,
+		sessionManager: SessionManager
+	): BusinessRepository {
+		return BusinessRepositoryImpl(firestore,sessionManager)
 	}
 	
 	@Provides
@@ -86,8 +98,9 @@ object AppModule {
 	@Provides
 	@Singleton
 	fun provideProductRepository(
-		firestore: FirebaseFirestore
-	): ProductRepository = ProductRepositoryImpl(firestore)
+		firestore: FirebaseFirestore,
+		firebaseStorage: FirebaseStorage
+	): ProductRepository = ProductRepositoryImpl(firestore, firebaseStorage)
 	
 	@Provides
 	@Singleton
@@ -119,6 +132,44 @@ object AppModule {
 	@Singleton
 	fun provideDeleteProductUseCase(productRepository: ProductRepository): DeleteProductUseCase {
 		return DeleteProductUseCase(productRepository)
+	}
+	
+	@Provides
+	@Singleton
+	fun provideUploadProductImageUseCase(productRepository: ProductRepository): UploadProductImageUseCase {
+		return UploadProductImageUseCase(productRepository)
+	}
+	
+	@Provides
+	@Singleton
+	fun provideFirebaseStorage(): FirebaseStorage {
+		return FirebaseStorage.getInstance()
+	}
+	
+	@Provides
+	@Singleton
+	fun provideUserRepository(
+		firestore: FirebaseFirestore,
+		auth: FirebaseAuth,
+		sessionManager: SessionManager
+	): UserRepository = UserRepositoryImpl(firestore,auth, sessionManager)
+	
+	@Provides
+	@Singleton
+	fun provideUpdateUserProfileUseCase(
+		userRepository: UserRepository
+	): UpdateUserProfileUseCase = UpdateUserProfileUseCase(userRepository)
+	
+	@Provides
+	@Singleton
+	fun provideReauthenticateUserUseCase(repository: UserRepository): ReauthenticateUserUseCase {
+		return ReauthenticateUserUseCase(repository)
+	}
+	
+	@Provides
+	@Singleton
+	fun provideUpdateUserEmailUseCase(userRepository: UserRepository): UpdateUserEmailUseCase {
+		return UpdateUserEmailUseCase(userRepository)
 	}
 	
 }

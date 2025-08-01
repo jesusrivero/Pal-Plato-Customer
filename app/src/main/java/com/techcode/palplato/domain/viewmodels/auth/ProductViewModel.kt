@@ -1,7 +1,10 @@
 package com.techcode.palplato.domain.viewmodels.auth
 
+import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.storage.FirebaseStorage
 import com.techcode.palplato.data.repository.local.SessionManager
 import com.techcode.palplato.domain.model.Product
 import com.techcode.palplato.domain.usecase.auth.bussiness.products.CreateProductUseCase
@@ -9,11 +12,14 @@ import com.techcode.palplato.domain.usecase.auth.bussiness.products.DeleteProduc
 import com.techcode.palplato.domain.usecase.auth.bussiness.products.GetProductsUseCase
 import com.techcode.palplato.domain.usecase.auth.bussiness.products.UpdateProductAvailabilityUseCase
 import com.techcode.palplato.domain.usecase.auth.bussiness.products.UpdateProductUseCase
+import com.techcode.palplato.domain.usecase.auth.bussiness.products.UploadProductImageUseCase
 import com.techcode.palplato.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -22,6 +28,7 @@ class ProductViewModel @Inject constructor(
 	private val getProductsUseCase: GetProductsUseCase,
 	private val updateProductUseCase: UpdateProductUseCase,
 	private val updateProductAvailabilityUseCase: UpdateProductAvailabilityUseCase,
+	private val uploadProductImageUseCase: UploadProductImageUseCase,
 	private val deleteProductUseCase: DeleteProductUseCase,
 	private val sessionManager: SessionManager
 ) : ViewModel() {
@@ -44,21 +51,56 @@ class ProductViewModel @Inject constructor(
 	private val _deleteProductState = MutableStateFlow<Resource<Unit>>(Resource.Idle)
 	val deleteProductState: StateFlow<Resource<Unit>> = _deleteProductState
 	
-	fun createProduct(product: Product) {
+//	fun createProduct(product: Product) {
+//		viewModelScope.launch {
+//			_createProductState.value = Resource.Loading()
+//
+//			val businessId = sessionManager.getBusinessId() ?: ""
+//			val productWithData = product.copy(
+//				businessId = businessId,
+//				date = System.currentTimeMillis() // ✅ Fecha actual
+//			)
+//
+//			val result = createProductUseCase(productWithData)
+//			_createProductState.value = result
+//		}
+//	}
+	
+	fun createProduct(product: Product, imageUri: Uri?) {
 		viewModelScope.launch {
 			_createProductState.value = Resource.Loading()
 			
-			val businessId = sessionManager.getBusinessId() ?: ""
-			val productWithData = product.copy(
-				businessId = businessId,
-				date = System.currentTimeMillis() // ✅ Fecha actual
-			)
-			
-			val result = createProductUseCase(productWithData)
-			_createProductState.value = result
+			try {
+				val businessId = sessionManager.getBusinessId() ?: ""
+				val productId = UUID.randomUUID().toString()
+				var imageUrl = ""
+				
+				// Subir imagen si existe
+				if (imageUri != null) {
+					val uploadResult = uploadProductImageUseCase(businessId, productId, imageUri)
+					if (uploadResult.isSuccess) {
+						imageUrl = uploadResult.getOrThrow()
+					} else {
+						_createProductState.value = Resource.Error("Error al subir imagen")
+						return@launch
+					}
+				}
+				
+				val productWithData = product.copy(
+					id = productId,
+					businessId = businessId,
+					imageUrl = imageUrl,
+					date = System.currentTimeMillis()
+				)
+				
+				// Ahora el caso de uso ya devuelve Resource
+				_createProductState.value = createProductUseCase(productWithData)
+				
+			} catch (e: Exception) {
+				_createProductState.value = Resource.Error(e.message ?: "Error desconocido")
+			}
 		}
 	}
-
 	
 	fun getProducts() {
 		viewModelScope.launch {
@@ -92,18 +134,106 @@ class ProductViewModel @Inject constructor(
 		_createProductState.value = Resource.Idle
 	}
 	
-	fun updateProduct(product: Product) {
+	
+	// ✅ Actualizar producto con imagen opcional
+	fun updateProduct(product: Product, imageUri: Uri?) {
 		viewModelScope.launch {
 			_updateState.value = Resource.Loading()
-			val result = updateProductUseCase(product)
-			_updateState.value = if (result.isSuccess) {
-				Resource.Success(Unit)
-			} else {
-				Resource.Error(result.exceptionOrNull()?.message ?: "Error desconocido")
+			
+			try {
+				var imageUrl = product.imageUrl
+				
+				// ✅ Intentar subir imagen solo si hay nueva imagen seleccionada
+				if (imageUri != null) {
+					Log.d("UpdateProduct", "Subiendo imagen para el producto ${product.id}")
+					val uploadResult = uploadProductImageUseCase(product.businessId, product.id, imageUri)
+					
+					if (uploadResult.isSuccess) {
+						imageUrl = uploadResult.getOrThrow()
+						Log.d("UpdateProduct", "Imagen subida correctamente: $imageUrl")
+					} else {
+						Log.e("UpdateProduct", "No se pudo subir imagen: ${uploadResult.exceptionOrNull()?.message}")
+						// ⚠️ Continuamos sin imagen nueva
+					}
+				} else {
+					Log.d("UpdateProduct", "No se seleccionó una nueva imagen. Se mantiene la actual.")
+				}
+				
+				// ✅ Crear producto actualizado
+				val updatedProduct = product.copy(imageUrl = imageUrl)
+				Log.d("UpdateProduct", "Actualizando producto con ID: ${updatedProduct.id}")
+				
+				val result = updateProductUseCase(updatedProduct)
+				
+				_updateState.value = if (result.isSuccess) {
+					Resource.Success(Unit)
+				} else {
+					Resource.Error(result.exceptionOrNull()?.message ?: "Error al actualizar producto")
+				}
+				
+			} catch (e: Exception) {
+				Log.e("UpdateProduct", "Excepción al actualizar producto: ${e.message}", e)
+				_updateState.value = Resource.Error(e.message ?: "Error desconocido")
 			}
 		}
 	}
 	
+//	ESTE CODIGO FUNCIONA PARA SUBIR IMAGENES, PERO CUANDO TENGA LA TARJETA Y LA HABILITE EN FIREBASE STORAGE, DEJARÉ EL CÓDIGO COMENTADO PARA QUE PUEDA SER UTILIZADO EN EL FUTURO
+//	fun updateProduct(product: Product, imageUri: Uri?) {
+//		viewModelScope.launch {
+//			_updateState.value = Resource.Loading()
+//
+//			try {
+//				var imageUrl = product.imageUrl
+//
+//				// ✅ Si hay una nueva imagen seleccionada, subirla a Firebase Storage
+//				if (imageUri != null) {
+//					Log.d("UpdateProduct", "Subiendo imagen para el producto ${product.id}")
+//					val uploadResult = uploadProductImageUseCase(product.businessId, product.id, imageUri)
+//
+//					if (uploadResult.isSuccess) {
+//						imageUrl = uploadResult.getOrThrow()
+//						Log.d("UpdateProduct", "Imagen subida correctamente: $imageUrl")
+//					} else {
+//						Log.e("UpdateProduct", "Error al subir imagen: ${uploadResult.exceptionOrNull()?.message}")
+//						_updateState.value = Resource.Error("Error al subir imagen")
+//						return@launch
+//					}
+//				}
+//
+//				// ✅ Crear producto actualizado
+//				val updatedProduct = product.copy(imageUrl = imageUrl)
+//				Log.d("UpdateProduct", "Actualizando producto con ID: ${updatedProduct.id}")
+//
+//				val result = updateProductUseCase(updatedProduct)
+//
+//				_updateState.value = if (result.isSuccess) {
+//					Resource.Success(Unit)
+//				} else {
+//					Resource.Error(result.exceptionOrNull()?.message ?: "Error al actualizar producto")
+//				}
+//
+//			} catch (e: Exception) {
+//				Log.e("UpdateProduct", "Excepción al actualizar producto: ${e.message}", e)
+//				_updateState.value = Resource.Error(e.message ?: "Error desconocido")
+//			}
+//		}
+//	}
+
+	
+	
+	//	fun updateProduct(product: Product) {
+//		viewModelScope.launch {
+//			_updateState.value = Resource.Loading()
+//			val result = updateProductUseCase(product)
+//			_updateState.value = if (result.isSuccess) {
+//				Resource.Success(Unit)
+//			} else {
+//				Resource.Error(result.exceptionOrNull()?.message ?: "Error desconocido")
+//			}
+//		}
+//	}
+//
 	fun updateProductAvailability(businessId: String, productId: String, available: Boolean) {
 		viewModelScope.launch {
 			_updateAvailabilityState.value = Resource.Loading()
@@ -139,6 +269,37 @@ class ProductViewModel @Inject constructor(
 			}
 		}
 	}
+	
+	suspend fun uploadProductImage(businessId: String, productId: String, imageUri: Uri): Result<String> {
+		return try {
+			Log.d("UploadImage", "Iniciando subida de imagen...")
+			Log.d("UploadImage", "Business ID: $businessId")
+			Log.d("UploadImage", "Product ID: $productId")
+			Log.d("UploadImage", "Image URI: $imageUri")
+			
+			val storageRef = FirebaseStorage.getInstance().reference
+				.child("businesses/$businessId/products/$productId.jpg")
+			
+			Log.d("UploadImage", "Referencia de Storage creada: ${storageRef.path}")
+			
+			// ✅ Subir archivo y esperar a que termine
+			val uploadTaskSnapshot = storageRef.putFile(imageUri).await()
+			Log.d("UploadImage", "Subida completada. Metadata: ${uploadTaskSnapshot.metadata?.path}")
+			
+			// ✅ Forzar actualización de metadatos antes de descargar la URL
+			val downloadUrl = storageRef.downloadUrl.await()
+			Log.d("UploadImage", "URL de descarga obtenida: $downloadUrl")
+			
+			Result.success(downloadUrl.toString())
+		} catch (e: Exception) {
+			Log.e("UploadImage", "Error al subir imagen: ${e.message}", e)
+			Result.failure(e)
+		}
+	}
+	
+	
+	
+	
 	
 	fun resetDeleteState() {
 		_deleteProductState.value = Resource.Idle

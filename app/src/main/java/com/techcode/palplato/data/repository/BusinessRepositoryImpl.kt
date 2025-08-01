@@ -1,6 +1,7 @@
 package com.techcode.palplato.data.repository
 
 import com.google.firebase.firestore.FirebaseFirestore
+import com.techcode.palplato.data.repository.local.SessionManager
 import com.techcode.palplato.domain.repository.BusinessRepository
 import com.techcode.palplato.domain.model.Business
 import com.techcode.palplato.domain.model.BusinessSchedule
@@ -10,16 +11,42 @@ import javax.inject.Inject
 import com.techcode.palplato.domain.model.Category
 
 class BusinessRepositoryImpl @Inject constructor(
-	private val firestore: FirebaseFirestore
+	private val firestore: FirebaseFirestore,
+	private val sessionManager: SessionManager,
 ) : BusinessRepository {
 	
 	
 	override suspend fun createBusiness(business: Business): String {
 		val docRef = firestore.collection("businesses").document()
 		val newBusiness = business.copy(businessId = docRef.id)
+		
+		// Guardar negocio en Firestore
 		docRef.set(newBusiness).await()
-		return docRef.id // ✅ Retornamos el businessId
+		
+		// Obtener el UID del usuario actual
+		val userId = sessionManager.getUserUid()
+			?: throw Exception("Usuario no autenticado")
+		
+		// Actualizar el documento del usuario con el businessId
+		firestore.collection("users")
+			.document(userId)
+			.update(
+				mapOf(
+					"businessId" to docRef.id,
+					"businessName" to newBusiness.name
+				)
+			).await()
+		
+		return docRef.id // ✅ Retornar businessId
 	}
+
+	
+//	override suspend fun createBusiness(business: Business): String {
+//		val docRef = firestore.collection("businesses").document()
+//		val newBusiness = business.copy(businessId = docRef.id)
+//		docRef.set(newBusiness).await()
+//		return docRef.id // ✅ Retornamos el businessId
+//	}
 	
 	
 	override suspend fun getBusinessById(businessId: String): Business? {

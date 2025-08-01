@@ -404,7 +404,7 @@ fun CreateMenuScreenContent(
 							size = if (selectedCategory == "Bebidas") size else null,
 							type = if (selectedCategory == "Bebidas") type else null
 						)
-						viewModel.createProduct(product)
+						viewModel.createProduct(product, selectedImageUri)
 					}
 				},
 				modifier = Modifier.fillMaxWidth(),

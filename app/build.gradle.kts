@@ -61,6 +61,8 @@ dependencies {
 	implementation(libs.firebase.auth.ktx)
 	implementation(libs.firebase.firestore.ktx)
 	implementation(libs.play.services.auth)
+	implementation (libs.google.firebase.storage.ktx)
+	implementation (libs.kotlinx.coroutines.play.services)
 	
 	implementation(libs.androidx.activity.compose.v190)
 	implementation(libs.androidx.lifecycle.viewmodel.compose)

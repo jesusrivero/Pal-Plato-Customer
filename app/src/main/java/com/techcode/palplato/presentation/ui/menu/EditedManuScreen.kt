@@ -1,6 +1,7 @@
 package com.techcode.palplato.presentation.ui.menu
 
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -69,7 +70,7 @@ import com.techcode.palplato.utils.Resource
 fun EditedMenuScreen(
 	navController: NavController,
 	productId: String,
-	viewModel: ProductViewModel = hiltViewModel()
+	viewModel: ProductViewModel = hiltViewModel(),
 ) {
 	LaunchedEffect(productId) {
 		viewModel.getProduct(productId)
@@ -88,7 +89,7 @@ fun EditedMenuScreen(
 fun EditedMenuScreenContent(
 	navController: NavController,
 	selectedProduct: Product?,
-	viewModel: ProductViewModel = hiltViewModel()
+	viewModel: ProductViewModel = hiltViewModel(),
 ) {
 	var dishName by rememberSaveable { mutableStateOf("") }
 	var description by rememberSaveable { mutableStateOf("") }
@@ -119,6 +120,7 @@ fun EditedMenuScreenContent(
 	
 	// Autocompletar datos
 	LaunchedEffect(selectedProduct) {
+		Log.d("EditedMenuScreen", "selectedProduct: $selectedProduct")
 		selectedProduct?.let {
 			dishName = it.name
 			description = it.description
@@ -356,7 +358,6 @@ fun EditedMenuScreenContent(
 				}
 			}
 			
-			// Botón Guardar
 			Button(
 				onClick = {
 					selectedProduct?.let {
@@ -370,9 +371,10 @@ fun EditedMenuScreenContent(
 							ingredients = if (selectedCategory != "Bebidas") ingredientesPrincipales else emptyList(),
 							imageUrl = selectedImageUri?.toString() ?: it.imageUrl
 						)
-						viewModel.updateProduct(updatedProduct)
+						viewModel.updateProduct(updatedProduct, selectedImageUri)
 					}
 				},
+				enabled = selectedProduct != null, // ✅ Deshabilitado hasta que cargue el producto
 				modifier = Modifier.fillMaxWidth(),
 				colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFC107))
 			) {
@@ -388,10 +390,9 @@ fun EditedMenuScreenContent(
 				}
 			}
 		}
+		
 	}
 }
-
-
 
 
 //@Preview(showBackground = true)

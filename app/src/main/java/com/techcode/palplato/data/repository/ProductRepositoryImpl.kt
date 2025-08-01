@@ -1,14 +1,17 @@
 package com.techcode.palplato.data.repository
 
+import android.net.Uri
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.techcode.palplato.domain.model.Product
 import com.techcode.palplato.domain.repository.ProductRepository
 import com.techcode.palplato.utils.Resource
 import kotlinx.coroutines.tasks.await
+import com.google.firebase.storage.FirebaseStorage
 
 class ProductRepositoryImpl(
-	private val firestore: FirebaseFirestore
+	private val firestore: FirebaseFirestore,
+	private val storage: FirebaseStorage
 ) : ProductRepository {
 	
 	override suspend fun createProduct(product: Product): Resource<Unit> {
@@ -114,5 +117,22 @@ class ProductRepositoryImpl(
 			Result.failure(e)
 		}
 	}
-
+	
+	override suspend fun uploadProductImage(businessId: String, productId: String, imageUri: Uri): Result<String> {
+		return try {
+			val storageRef = storage.reference
+				.child("businesses/$businessId/products/$productId.jpg")
+			
+			storageRef.putFile(imageUri).await()
+			val downloadUrl = storageRef.downloadUrl.await()
+			
+			Result.success(downloadUrl.toString())
+		} catch (e: Exception) {
+			e.printStackTrace() // 👈 Esto mostrará el error real en Logcat
+			Result.failure(e)
+		}
+	}
+	
+	
+	
 }
