@@ -5,11 +5,13 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.techcode.palplato.data.repository.AuthRepositoryImpl
 import com.techcode.palplato.data.repository.BusinessRepositoryImpl
+import com.techcode.palplato.data.repository.DatesProductsHomeRepositoryImpl
 import com.techcode.palplato.data.repository.ProductRepositoryImpl
 import com.techcode.palplato.data.repository.UserRepositoryImpl
 import com.techcode.palplato.data.repository.local.SessionManager
 import com.techcode.palplato.domain.repository.AuthRepository
 import com.techcode.palplato.domain.repository.BusinessRepository
+import com.techcode.palplato.domain.repository.DatesProductsHomeRepository
 import com.techcode.palplato.domain.repository.ProductRepository
 import com.techcode.palplato.domain.repository.UserRepository
 import com.techcode.palplato.domain.usecase.auth.LoginUseCase
@@ -17,6 +19,7 @@ import com.techcode.palplato.domain.usecase.auth.RegisterUseCase
 import com.techcode.palplato.domain.usecase.auth.bussiness.CreateBusinessUseCase
 import com.techcode.palplato.domain.usecase.auth.bussiness.GetBusinessUseCase
 import com.techcode.palplato.domain.usecase.auth.bussiness.UpdateBusinessUseCase
+import com.techcode.palplato.domain.usecase.auth.bussiness.mainscreen.GetActiveProductsCountUseCase
 import com.techcode.palplato.domain.usecase.auth.bussiness.products.CreateProductUseCase
 import com.techcode.palplato.domain.usecase.auth.bussiness.products.DeleteProductUseCase
 import com.techcode.palplato.domain.usecase.auth.bussiness.products.GetProductsUseCase
@@ -25,6 +28,7 @@ import com.techcode.palplato.domain.usecase.auth.bussiness.products.UpdateProduc
 import com.techcode.palplato.domain.usecase.auth.bussiness.products.UploadProductImageUseCase
 import com.techcode.palplato.domain.usecase.auth.updateprofiledates.ReauthenticateUserUseCase
 import com.techcode.palplato.domain.usecase.auth.updateprofiledates.UpdateUserEmailUseCase
+import com.techcode.palplato.domain.usecase.auth.updateprofiledates.UpdateUserPasswordUseCase
 import com.techcode.palplato.domain.usecase.auth.updateprofiledates.UpdateUserProfileUseCase
 import dagger.Module
 import dagger.Provides
@@ -172,4 +176,23 @@ object AppModule {
 		return UpdateUserEmailUseCase(userRepository)
 	}
 	
+	@Provides
+	@Singleton
+	fun provideUpdateUserPasswordUseCase(
+		userRepository: UserRepository
+	): UpdateUserPasswordUseCase = UpdateUserPasswordUseCase(userRepository)
+	
+	@Provides
+	@Singleton
+	fun provideDatesProductsHomeRepository(firestore: FirebaseFirestore): DatesProductsHomeRepository {
+		return DatesProductsHomeRepositoryImpl(firestore)
+	}
+	
+	@Provides
+	@Singleton
+	fun provideGetActiveProductsCountUseCase(
+		repository: DatesProductsHomeRepository
+	): GetActiveProductsCountUseCase {
+		return GetActiveProductsCountUseCase(repository)
+	}
 }

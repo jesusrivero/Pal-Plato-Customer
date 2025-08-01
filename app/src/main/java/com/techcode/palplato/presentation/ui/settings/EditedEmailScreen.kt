@@ -44,6 +44,7 @@ import com.techcode.palplato.R
 import com.techcode.palplato.domain.model.UserProfileUpdate
 import com.techcode.palplato.domain.viewmodels.auth.UserViewModel
 import com.techcode.palplato.utils.AppAlertDialog
+import com.techcode.palplato.utils.AppConfirmDialog
 import com.techcode.palplato.utils.Resource
 
 @Composable
@@ -64,10 +65,12 @@ fun EditedEmailScreenContent(
 	
 	var emailError by remember { mutableStateOf<String?>(null) }
 	var passwordError by remember { mutableStateOf<String?>(null) }
-	val updateProfileState by viewModel.updateProfileState.collectAsState()
-	val userProfileState by viewModel.userProfileState.collectAsState()
-	val updateEmailState by viewModel.updateEmailState.collectAsState()
+	var showConfirmDialog by remember { mutableStateOf(false) } // ✅ Estado para el diálogo
 	
+	val updateEmailState by viewModel.updateEmailState.collectAsState()
+	val userProfileState by viewModel.userProfileState.collectAsState()
+	
+	// Cargar datos del perfil
 	LaunchedEffect(Unit) {
 		viewModel.getUserProfile()
 	}
@@ -79,6 +82,7 @@ fun EditedEmailScreenContent(
 		}
 	}
 	
+	
 	// Mostrar feedback
 	AppAlertDialog(
 		state = updateEmailState,
@@ -89,6 +93,18 @@ fun EditedEmailScreenContent(
 			}
 		}
 	)
+	
+	// ✅ Diálogo de confirmación
+	if (showConfirmDialog) {
+		AppConfirmDialog(
+			title = "Confirmar cambio de correo",
+			message = "¿Estás seguro de que deseas cambiar tu correo a $newEmail?",
+			onConfirm = {
+				viewModel.updateUserEmail(newEmail, password)
+			},
+			onDismiss = { showConfirmDialog = false }
+		)
+	}
 	
 	Scaffold(
 		topBar = {
@@ -176,7 +192,7 @@ fun EditedEmailScreenContent(
 					}
 					
 					if (isValid) {
-						viewModel.updateUserEmail(newEmail, password)
+						showConfirmDialog = true // ✅ Mostrar diálogo antes de actualizar
 					}
 				},
 				modifier = Modifier.fillMaxWidth(),
@@ -194,6 +210,7 @@ fun EditedEmailScreenContent(
 		}
 	}
 }
+
 
 
 

@@ -8,6 +8,9 @@ import com.techcode.palplato.domain.repository.ProductRepository
 import com.techcode.palplato.utils.Resource
 import kotlinx.coroutines.tasks.await
 import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 
 class ProductRepositoryImpl(
 	private val firestore: FirebaseFirestore,
@@ -133,6 +136,22 @@ class ProductRepositoryImpl(
 		}
 	}
 	
+	
+	override fun getActiveProductsCount(businessId: String): Flow<Int> = callbackFlow {
+		val listener = firestore.collection("businesses")
+			.document(businessId)
+			.collection("products")
+			.whereEqualTo("isActive", true)
+			.addSnapshotListener { snapshot, error ->
+				if (error != null) {
+					close(error)
+					return@addSnapshotListener
+				}
+				trySend(snapshot?.size() ?: 0)
+			}
+		
+		awaitClose { listener.remove() }
+	}
 	
 	
 }

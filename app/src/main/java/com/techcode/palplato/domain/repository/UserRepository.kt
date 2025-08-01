@@ -8,5 +8,7 @@ interface UserRepository {
 	suspend fun reauthenticateUser(password: String): Result<Unit>
 	suspend fun updateUserEmail(newEmail: String): Result<Unit>
 	suspend fun syncUserEmail(): Result<Unit>
+	suspend fun updateUserPassword(newPassword: String): Result<Unit>
+	
 
 }

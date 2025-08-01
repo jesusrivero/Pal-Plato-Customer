@@ -24,7 +24,6 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -32,28 +31,38 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.techcode.palplato.presentation.navegation.AppRoutes
+import com.techcode.palplato.domain.viewmodels.auth.DatesProductsHomeViewModel
 import com.techcode.palplato.presentation.ui.commons.BottomNavigationBar
-
+import androidx.compose.runtime.getValue
+import com.techcode.palplato.presentation.navegation.AppRoutes
 
 @Composable
-fun MainScreen(	navController: NavController){
-	
-	MainScreenContent(navController = navController,)
-	
+fun MainScreen(
+	navController: NavController,
+) {
+	MainScreenContent(
+		navController = navController
+	)
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreenContent(navController: NavController) {
+fun MainScreenContent(
+	navController: NavController,
+	viewModel: DatesProductsHomeViewModel = hiltViewModel()
+) {
+	// Observamos el conteo de productos activos desde el ViewModel
+	val activeMenus by viewModel.activeProductsCount.collectAsState(initial = 0)
+	
 	Scaffold(
 		topBar = {
 			CenterAlignedTopAppBar(
@@ -90,13 +99,10 @@ fun MainScreenContent(navController: NavController) {
 				.padding(16.dp)
 				.verticalScroll(rememberScrollState())
 		) {
-//			Text("Hola, Jesús", style = MaterialTheme.typography.headlineSmall)
-//			Text("Pa'l Plato", style = MaterialTheme.typography.bodyMedium)
-			
 			Spacer(Modifier.height(16.dp))
 			
-			// Cuadros de estadísticas
-			StatsGrid()
+			// Pasamos el valor de menús activos a StatsGrid
+			StatsGrid(activeMenus = activeMenus)
 			
 			Spacer(Modifier.height(24.dp))
 			
@@ -111,8 +117,10 @@ fun MainScreenContent(navController: NavController) {
 	}
 }
 
+
+
 @Composable
-fun StatsGrid() {
+fun StatsGrid(activeMenus: Int) {
 	Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
 		Row(
 			modifier = Modifier.fillMaxWidth(),
@@ -126,7 +134,7 @@ fun StatsGrid() {
 			)
 			StatCard(
 				title = "Menús activos",
-				value = "8",
+				value = activeMenus.toString(),
 				iconRes = com.techcode.palplato.R.drawable.ic_menu,
 				modifier = Modifier.weight(1f)
 			)
@@ -150,6 +158,7 @@ fun StatsGrid() {
 		}
 	}
 }
+
 
 
 // StatCard.kt
@@ -191,10 +200,10 @@ fun StatCard(
 @Composable
 fun QuickAccessGrid(navController: NavController) {
 	val items = listOf(
-		Triple("Ver menús", Icons.Default.List, {}),
-		Triple("Agregar menú", Icons.Default.Add, {}),
-		Triple("Ver pedidos", Icons.Default.Receipt, {}),
-		Triple("Ver Reportes", Icons.Default.BarChart, {})
+		Triple("Ver menús", Icons.Default.List, {navController.navigate(AppRoutes.MenuScreen)}),
+		Triple("Agregar menú", Icons.Default.Add, {navController.navigate(AppRoutes.CreateMenuScreen)}),
+		Triple("Ver pedidos", Icons.Default.Receipt, {navController.navigate(AppRoutes.OrderScreen)}),
+		Triple("Ver Reportes", Icons.Default.BarChart, {navController.navigate(AppRoutes.ReporstScreen)})
 	)
 	
 	Row(
@@ -259,10 +268,10 @@ fun RecentActivityList() {
 }
 
 
-@Preview(showBackground = true)
-@Composable
-fun MainScreenPreview() {
-	
-	val navController = rememberNavController()
-	MainScreenContent(navController = navController)
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun MainScreenPreview() {
+//
+//	val navController = rememberNavController()
+//	MainScreenContent(navController = navController)
+//}

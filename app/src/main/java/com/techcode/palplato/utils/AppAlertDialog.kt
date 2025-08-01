@@ -35,7 +35,7 @@ fun AppAlertDialog(
 		
 		// Autocerrar después de 2 segundos
 		LaunchedEffect(state) {
-			delay(2000)
+			delay(1500)
 			onDismiss()
 		}
 		

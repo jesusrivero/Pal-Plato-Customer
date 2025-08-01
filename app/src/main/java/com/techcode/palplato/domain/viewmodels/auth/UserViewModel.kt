@@ -10,6 +10,7 @@ import com.techcode.palplato.domain.model.GetUserProfileUseCase
 import com.techcode.palplato.domain.model.UserProfileUpdate
 import com.techcode.palplato.domain.usecase.auth.updateprofiledates.ReauthenticateUserUseCase
 import com.techcode.palplato.domain.usecase.auth.updateprofiledates.UpdateUserEmailUseCase
+import com.techcode.palplato.domain.usecase.auth.updateprofiledates.UpdateUserPasswordUseCase
 import com.techcode.palplato.domain.usecase.auth.updateprofiledates.UpdateUserProfileUseCase
 import com.techcode.palplato.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,6 +26,7 @@ class UserViewModel @Inject constructor(
 	private val getUserProfileUseCase: GetUserProfileUseCase,
 	private val reauthenticateUserUseCase: ReauthenticateUserUseCase,
 	private val updateUserEmailUseCase: UpdateUserEmailUseCase,
+	private val updateUserPasswordUseCase: UpdateUserPasswordUseCase,
 	private val sessionManager: SessionManager
 ) : ViewModel() {
 	
@@ -37,6 +39,8 @@ class UserViewModel @Inject constructor(
 	private val _updateEmailState = MutableStateFlow<Resource<Unit>>(Resource.Idle)
 	val updateEmailState: StateFlow<Resource<Unit>> = _updateEmailState
 	
+	private val _updatePasswordState = MutableStateFlow<Resource<Unit>>(Resource.Idle)
+	val updatePasswordState: StateFlow<Resource<Unit>> = _updatePasswordState
 	
 	fun updateUserProfile(name: String, lastname: String, email: String, password: String) {
 		viewModelScope.launch {
@@ -118,6 +122,22 @@ class UserViewModel @Inject constructor(
 		}
 	}
 	
+	fun updateUserPassword(currentPassword: String, newPassword: String) {
+		viewModelScope.launch {
+			_updatePasswordState.value = Resource.Loading()
+			
+			val result = updateUserPasswordUseCase(currentPassword, newPassword)
+			_updatePasswordState.value = if (result.isSuccess) {
+				Resource.Success(Unit)
+			} else {
+				Resource.Error(result.exceptionOrNull()?.message ?: "Error al actualizar contraseña")
+			}
+		}
+	}
+	
+	fun resetUpdatePasswordState() {
+		_updatePasswordState.value = Resource.Idle
+	}
 	
 	fun resetUpdateEmailState() {
 		_updateEmailState.value = Resource.Idle

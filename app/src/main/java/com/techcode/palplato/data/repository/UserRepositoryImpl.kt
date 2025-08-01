@@ -107,4 +107,17 @@ class UserRepositoryImpl @Inject constructor(
 			Result.failure(e)
 		}
 	}
+	
+	override suspend fun updateUserPassword(newPassword: String): Result<Unit> {
+		return try {
+			val currentUser = auth.currentUser
+				?: return Result.failure(Exception("Usuario no autenticado"))
+			
+			currentUser.updatePassword(newPassword).await()
+			
+			Result.success(Unit)
+		} catch (e: Exception) {
+			Result.failure(e)
+		}
+	}
 }

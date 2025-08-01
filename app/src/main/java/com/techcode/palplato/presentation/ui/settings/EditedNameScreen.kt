@@ -42,6 +42,7 @@ import com.techcode.palplato.R
 import com.techcode.palplato.domain.model.UserProfileUpdate
 import com.techcode.palplato.domain.viewmodels.auth.UserViewModel
 import com.techcode.palplato.utils.AppAlertDialog
+import com.techcode.palplato.utils.AppConfirmDialog
 import com.techcode.palplato.utils.Resource
 
 
@@ -70,6 +71,9 @@ fun EditedNameScreenContent(
 	val updateProfileState by viewModel.updateProfileState.collectAsState()
 	val userProfileState by viewModel.userProfileState.collectAsState()
 	
+	// Estado del diálogo de confirmación
+	var showConfirmDialog by remember { mutableStateOf(false) }
+	
 	LaunchedEffect(Unit) {
 		viewModel.getUserProfile()
 	}
@@ -79,10 +83,11 @@ fun EditedNameScreenContent(
 			val profile = (userProfileState as Resource.Success<UserProfileUpdate>).result
 			firstName = profile.name
 			lastName = profile.lastname
-			email= profile.email
+			email = profile.email
 		}
 	}
-	// ✅ Mostrar feedback de actualización
+	
+	// Feedback de actualización
 	AppAlertDialog(
 		state = updateProfileState,
 		onDismiss = {
@@ -92,6 +97,19 @@ fun EditedNameScreenContent(
 			}
 		}
 	)
+	
+	// Diálogo de confirmación
+	if (showConfirmDialog) {
+		AppConfirmDialog(
+			title = "Confirmar cambios",
+			message = "¿Estás seguro de actualizar tu nombre y apellido?",
+			onConfirm = {
+				viewModel.updateUserProfile(firstName, lastName, email, password)
+				showConfirmDialog = false
+			},
+			onDismiss = { showConfirmDialog = false }
+		)
+	}
 	
 	Scaffold(
 		topBar = {
@@ -192,8 +210,7 @@ fun EditedNameScreenContent(
 					}
 					
 					if (isValid) {
-						// ✅ Llamada correcta al ViewModel con password incluido
-						viewModel.updateUserProfile(firstName, lastName,email, password)
+						showConfirmDialog = true
 					}
 				},
 				modifier = Modifier.fillMaxWidth(),
