@@ -14,18 +14,11 @@ import com.techcode.palplato.domain.repository.BusinessRepository
 import com.techcode.palplato.domain.repository.DatesProductsHomeRepository
 import com.techcode.palplato.domain.repository.ProductRepository
 import com.techcode.palplato.domain.repository.UserRepository
+import com.techcode.palplato.domain.usecase.auth.products.GetProductByIdUseCase
 import com.techcode.palplato.domain.usecase.auth.LoginUseCase
 import com.techcode.palplato.domain.usecase.auth.RegisterUseCase
-import com.techcode.palplato.domain.usecase.auth.bussiness.CreateBusinessUseCase
-import com.techcode.palplato.domain.usecase.auth.bussiness.GetBusinessUseCase
-import com.techcode.palplato.domain.usecase.auth.bussiness.UpdateBusinessUseCase
-import com.techcode.palplato.domain.usecase.auth.bussiness.mainscreen.GetActiveProductsCountUseCase
-import com.techcode.palplato.domain.usecase.auth.bussiness.products.CreateProductUseCase
-import com.techcode.palplato.domain.usecase.auth.bussiness.products.DeleteProductUseCase
-import com.techcode.palplato.domain.usecase.auth.bussiness.products.GetProductsUseCase
-import com.techcode.palplato.domain.usecase.auth.bussiness.products.UpdateProductAvailabilityUseCase
-import com.techcode.palplato.domain.usecase.auth.bussiness.products.UpdateProductUseCase
-import com.techcode.palplato.domain.usecase.auth.bussiness.products.UploadProductImageUseCase
+import com.techcode.palplato.domain.usecase.auth.bussiness.GetBusinessesUseCase
+import com.techcode.palplato.domain.usecase.auth.bussiness.GetProductsByBusinessUseCase
 import com.techcode.palplato.domain.usecase.auth.updateprofiledates.ReauthenticateUserUseCase
 import com.techcode.palplato.domain.usecase.auth.updateprofiledates.UpdateUserEmailUseCase
 import com.techcode.palplato.domain.usecase.auth.updateprofiledates.UpdateUserPasswordUseCase
@@ -78,26 +71,14 @@ object AppModule {
 		firestore: FirebaseFirestore,
 		sessionManager: SessionManager
 	): BusinessRepository {
-		return BusinessRepositoryImpl(firestore,sessionManager)
+		return BusinessRepositoryImpl(firestore)
 	}
 	
 	@Provides
 	@Singleton
-	fun provideCreateBusinessUseCase(repository: BusinessRepository): CreateBusinessUseCase {
-		return CreateBusinessUseCase(repository)
-	}
-	
-	@Provides
-	@Singleton
-	fun provideUpdateBusinessUseCase(repository: BusinessRepository): UpdateBusinessUseCase {
-		return UpdateBusinessUseCase(repository)
-	}
-	
-	@Provides
-	@Singleton
-	fun provideGetBusinessUseCase(repository: BusinessRepository): GetBusinessUseCase {
-		return GetBusinessUseCase(repository)
-	}
+	fun provideGetBusinessesUseCase(
+		repository: BusinessRepository
+	): GetBusinessesUseCase = GetBusinessesUseCase(repository)
 	
 	@Provides
 	@Singleton
@@ -106,43 +87,7 @@ object AppModule {
 		firebaseStorage: FirebaseStorage
 	): ProductRepository = ProductRepositoryImpl(firestore, firebaseStorage)
 	
-	@Provides
-	@Singleton
-	fun provideCreateProductUseCase(
-		repository: ProductRepository
-	): CreateProductUseCase = CreateProductUseCase(repository)
-	
-	@Provides
-	@Singleton
-	fun provideGetProductsUseCase(repository: ProductRepository): GetProductsUseCase {
-		return GetProductsUseCase(repository)
-	}
-	
-	
-	@Provides
-	@Singleton
-	fun provideUpdateProductUseCase(productRepository: ProductRepository): UpdateProductUseCase {
-		return UpdateProductUseCase(productRepository)
-	}
-	
-	@Provides
-	@Singleton
-	fun provideUpdateProductAvailabilityUseCase(
-		productRepository: ProductRepository
-	): UpdateProductAvailabilityUseCase {
-		return UpdateProductAvailabilityUseCase(productRepository)
-	}
-	@Provides
-	@Singleton
-	fun provideDeleteProductUseCase(productRepository: ProductRepository): DeleteProductUseCase {
-		return DeleteProductUseCase(productRepository)
-	}
-	
-	@Provides
-	@Singleton
-	fun provideUploadProductImageUseCase(productRepository: ProductRepository): UploadProductImageUseCase {
-		return UploadProductImageUseCase(productRepository)
-	}
+
 	
 	@Provides
 	@Singleton
@@ -190,9 +135,13 @@ object AppModule {
 	
 	@Provides
 	@Singleton
-	fun provideGetActiveProductsCountUseCase(
-		repository: DatesProductsHomeRepository
-	): GetActiveProductsCountUseCase {
-		return GetActiveProductsCountUseCase(repository)
-	}
+	fun provideGetProductsByBusinessUseCase(
+		repository: ProductRepository
+	): GetProductsByBusinessUseCase = GetProductsByBusinessUseCase(repository)
+	
+	@Provides
+	@Singleton
+	fun provideGetProductByIdUseCase(
+		repository: ProductRepository
+	): GetProductByIdUseCase = GetProductByIdUseCase(repository)
 }

@@ -30,6 +30,7 @@ javapoet = "1.13.0" # Opcional si usas en otra parte
 navigationComposeVersion = "2.8.9"
 kotlinSerializationJson = "1.8.0"
 playServicesAuth = "21.4.0"
+threetenabp = "1.4.4"
 ui = "1.8.3"
 hilt = "2.51.1"
 uiToolingPreview = "1.8.3"
@@ -87,6 +88,7 @@ kotlinx-serialization-json-v151 = { module = "org.jetbrains.kotlinx:kotlinx-seri
 material = { module = "com.google.android.material:material", version.ref = "material" }
 material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
 play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
+threetenabp = { module = "com.jakewharton.threetenabp:threetenabp", version.ref = "threetenabp" }
 ui = { module = "androidx.compose.ui:ui", version.ref = "ui" }
 ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "uiToolingPreview" }
 androidx-navigation-compose-jvmstubs = { group = "androidx.navigation", name = "navigation-compose-jvmstubs", version.ref = "navigationComposeJvmstubs" }

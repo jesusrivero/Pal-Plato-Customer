@@ -4,7 +4,7 @@ import android.app.Application
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
-class MyApplication : Application(){
+class MyApplication : Application() {
 	companion object {
 		lateinit var myApp: MyApplication
 	}
@@ -12,5 +12,8 @@ class MyApplication : Application(){
 	override fun onCreate() {
 		super.onCreate()
 		myApp = this
+		
+		// Inicializar ThreeTenABP
+		com.jakewharton.threetenabp.AndroidThreeTen.init(this)
 	}
 }

@@ -41,6 +41,35 @@
           ]
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:347599519685:android:02d113ffb6e9962ac615ac",
+        "android_client_info": {
+          "package_name": "com.techcode.palplato.customer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "347599519685-naucg77m4nreid8cqv7gqq13dfds4k4n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBQqmEwEoTblKRQ5hcIEtewyijH_YRKlH4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "347599519685-naucg77m4nreid8cqv7gqq13dfds4k4n.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
     }
   ],
   "configuration_version": "1"

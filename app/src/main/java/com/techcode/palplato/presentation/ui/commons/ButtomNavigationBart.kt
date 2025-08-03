@@ -160,11 +160,10 @@ fun BottomNavigationBar(
 	val currentRoute = navBackStackEntry?.destination?.route
 	
 	val mainRoute = navRoute<AppRoutes.MainScreen>()
-	val menuRoute = navRoute<AppRoutes.MenuScreen>()
+	val menuRoute = navRoute<AppRoutes.FavoriteScreen>()
 	val ordersRoute = navRoute<AppRoutes.OrderScreen>()
-	val reportsRoute = navRoute<AppRoutes.ReporstScreen>()
 	val settingsRoute = navRoute<AppRoutes.SettingsScreen>()
-	val customBlue = Color(0xFFD0A424) // Color personalizado
+	val customBlue = Color(0xFFD0A424)
 	
 	Surface(
 		tonalElevation = 6.dp,
@@ -179,9 +178,8 @@ fun BottomNavigationBar(
 		) {
 			val items = listOf(
 				Triple("Home", com.techcode.palplato.R.drawable.ic_home, mainRoute),
-				Triple("Menus", com.techcode.palplato.R.drawable.ic_menu, menuRoute),
-				Triple("Órdenes", com.techcode.palplato.R.drawable.ic_orders, ordersRoute),
-				Triple("Reportes", com.techcode.palplato.R.drawable.ic_reports, reportsRoute),
+				Triple("Favoritos", com.techcode.palplato.R.drawable.ic_favorites, menuRoute),
+				Triple("Pedidos", com.techcode.palplato.R.drawable.ic_orders, ordersRoute),
 				Triple("Ajustes", com.techcode.palplato.R.drawable.ic_settings, settingsRoute)
 			)
 			

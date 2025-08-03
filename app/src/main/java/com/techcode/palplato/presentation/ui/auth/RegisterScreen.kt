@@ -258,7 +258,7 @@ fun RegisterScreenContent(
 								name = name.trim(),
 								lastname = lastName.trim(),
 								email = email.trim(),
-								rol = "owner",
+								rol = "customer",
 								state = "activo",
 								date = System.currentTimeMillis()
 							)
@@ -277,7 +277,7 @@ fun RegisterScreenContent(
 					is Resource.Success -> {
 						LaunchedEffect(Unit) {
 							// ✅ Ir a crear negocio
-							navController.navigate(AppRoutes.CreateBussinessScreen) {
+							navController.navigate(AppRoutes.MainScreen) {
 								popUpTo(AppRoutes.RegisterScreen) { inclusive = true }
 							}
 							ViewModel.clearState()

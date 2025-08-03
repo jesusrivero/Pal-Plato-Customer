@@ -8,8 +8,8 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="com.techcode.palplato" />
-                  <option name="mobileSdkAppId" value="1:347599519685:android:e6210d5180a742f5c615ac" />
+                  <option name="appId" value="com.techcode.palplato.customer" />
+                  <option name="mobileSdkAppId" value="1:347599519685:android:02d113ffb6e9962ac615ac" />
                   <option name="projectId" value="pal-plato" />
                   <option name="projectNumber" value="347599519685" />
                 </ConnectionSetting>

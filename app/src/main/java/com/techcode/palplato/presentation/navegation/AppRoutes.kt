@@ -12,23 +12,8 @@ object AppRoutes {
 	data object OrderScreen
 	
 	@Serializable
-	data object MenuScreen
+	data object FavoriteScreen
 	
-	@Serializable
-	data class EditedMenuRoute(val productId: String) // <
-
-
-//	@Serializable
-//	data object MenuScreen
-//
-//	@Serializable
-//	data object EditedMenuScreen
-	
-	@Serializable
-	data object CreateBussinessScreen
-	
-//	@Serializable
-//	data object TutorialScreen
 	
 	@Serializable
 	data object ReporstScreen
@@ -50,9 +35,6 @@ object AppRoutes {
 	
 	@Serializable
 	data object OrderDetailsScreen
-	
-	@Serializable
-	data object CreateMenuScreen
 	
 	@Serializable
 	data object EditedProfileScreen
@@ -87,15 +69,18 @@ object AppRoutes {
 	@Serializable
 	data object EditedNotificationPreferencesScreen
 	
+	@Serializable
+	data object AllBusinessesScreen
+	
+	@Serializable
+	data class GetAllProductsBusinessScreen(val businessId: String)
+	
+	@Serializable
+	data class BusinessDetailScreen(val businessId: String)
+	
+	@Serializable
+	data class ProductDetailScreen(val businessId: String, val productId: String)
+
 	
 	
-//
-//	@Serializable
-//	data object LoginScreen
-//
-//	@Serializable
-//	data object RegisterScreen
-//
-//	@Serializable
-//	data object CreateBusinessScreen
 }

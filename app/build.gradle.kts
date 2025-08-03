@@ -13,7 +13,7 @@ android {
 	compileSdk = 35
 	
 	defaultConfig {
-		applicationId = "com.techcode.palplato"
+		applicationId = "com.techcode.palplato.customer"
 		minSdk = 24
 		targetSdk = 35
 		versionCode = 1
@@ -66,6 +66,7 @@ dependencies {
 	
 	implementation(libs.androidx.activity.compose.v190)
 	implementation(libs.androidx.lifecycle.viewmodel.compose)
+	implementation (libs.threetenabp)
 	
 	// Hilt - Configuración corregida
 	implementation(libs.hilt.android)

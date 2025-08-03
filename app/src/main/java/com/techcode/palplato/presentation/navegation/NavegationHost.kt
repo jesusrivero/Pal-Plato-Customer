@@ -7,23 +7,21 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.techcode.palplato.presentation.navegation.AppRoutes.EditedMenuRoute
-import com.techcode.palplato.presentation.navegation.AppRoutes.MenuScreen
-import com.techcode.palplato.presentation.ui.bussines.CreateBussinessScreen
+
+import com.techcode.palplato.presentation.navegation.AppRoutes.FavoriteScreen
 import com.techcode.palplato.presentation.ui.auth.LoginScreen
 import com.techcode.palplato.presentation.ui.auth.RecoverPasswordScreen
 import com.techcode.palplato.presentation.ui.auth.RegisterScreen
 import com.techcode.palplato.presentation.ui.auth.SplashScreen
-import com.techcode.palplato.presentation.ui.bussines.EditedBussinessScreen
-import com.techcode.palplato.presentation.ui.bussines.EditedDatesBussinessScreen
-import com.techcode.palplato.presentation.ui.bussines.EditedschedulesBusseinessScreen
+import com.techcode.palplato.presentation.ui.bussines.AllBusinessesScreen
+import com.techcode.palplato.presentation.ui.bussines.BusinessDetailScreen
+import com.techcode.palplato.presentation.ui.bussines.GetAllProductsBusinessScreen
 import com.techcode.palplato.presentation.ui.order.OrderScreen
 import com.techcode.palplato.presentation.ui.reports.ReporstScreen
 import com.techcode.palplato.presentation.ui.main.MainScreen
-import com.techcode.palplato.presentation.ui.menu.CreateMenuScreen
-import com.techcode.palplato.presentation.ui.menu.EditedMenuScreen
-import com.techcode.palplato.presentation.ui.menu.MenuScreen
+import com.techcode.palplato.presentation.ui.favorites.FavoriteScreen
 import com.techcode.palplato.presentation.ui.order.OrderDetailsScreen
+import com.techcode.palplato.presentation.ui.products.ProductsDetailScreenContent
 import com.techcode.palplato.presentation.ui.settings.EditedEmailScreen
 import com.techcode.palplato.presentation.ui.settings.EditedNameScreen
 import com.techcode.palplato.presentation.ui.settings.EditedNotificationPreferencesScreen
@@ -49,17 +47,10 @@ fun NavegationHost(){
 			SplashScreen(navController = navController)
 		}
 		
-		composable<MenuScreen> {
-			MenuScreen(navController = navController)
+		composable<FavoriteScreen> {
+			FavoriteScreen(navController = navController)
 		}
 		
-		composable<EditedMenuRoute> { backStackEntry ->
-			val args = backStackEntry.toRoute<EditedMenuRoute>()
-			EditedMenuScreen(
-				navController = navController,
-				productId = args.productId
-			)
-		}
 		
 //
 //		composable<AppRoutes.MenuScreen> {
@@ -94,16 +85,9 @@ fun NavegationHost(){
 			RegisterScreen(navController = navController)
 		}
 		
-		composable<AppRoutes.CreateBussinessScreen> {
-			CreateBussinessScreen(navController = navController)
-		}
 		
 		composable<AppRoutes.OrderDetailsScreen> {
 			OrderDetailsScreen(navController = navController)
-		}
-		
-		composable<AppRoutes.CreateMenuScreen> {
-			CreateMenuScreen(navController = navController)
 		}
 		
 		
@@ -124,13 +108,6 @@ fun NavegationHost(){
 			EditedPhoneScreen(navController = navController)
 		}
 		
-		composable<AppRoutes.EditedBussinessScreen> {
-			EditedBussinessScreen(navController = navController)
-		}
-		
-		composable<AppRoutes.EditedDatesBussinessScreen> {
-			EditedDatesBussinessScreen(navController = navController)
-		}
 		
 		composable<AppRoutes.EditedSecurityScreen> {
 			EditedSecurityScreen(navController = navController)
@@ -143,9 +120,38 @@ fun NavegationHost(){
 		composable<AppRoutes.EditedNotificationPreferencesScreen> {
 			EditedNotificationPreferencesScreen(navController = navController)
 		}
-		composable<AppRoutes.EditedschedulesBusseinessScreen> {
-			EditedschedulesBusseinessScreen(navController = navController)
+		
+		composable<AppRoutes.AllBusinessesScreen> {
+			AllBusinessesScreen(navController = navController)
 		}
 		
+		composable<AppRoutes.GetAllProductsBusinessScreen> { backStackEntry ->
+			val args = backStackEntry.toRoute<AppRoutes.GetAllProductsBusinessScreen>()
+			GetAllProductsBusinessScreen(
+				navController = navController,
+				businessId = args.businessId
+			)
+		}
+		
+		composable<AppRoutes.BusinessDetailScreen> { backStackEntry ->
+			val args = backStackEntry.toRoute<AppRoutes.BusinessDetailScreen>()
+			BusinessDetailScreen(navController, args.businessId)
+		}
+		
+		
+		
+		composable<AppRoutes.ProductDetailScreen> { backStackEntry ->
+			val args = backStackEntry.toRoute<AppRoutes.ProductDetailScreen>()
+			ProductsDetailScreenContent(
+				navController = navController,
+				businessId = args.businessId,
+				productId = args.productId
+			)
+		}
+//
+//		composable<AppRoutes.GetAllProductsBusinessScreen> {
+//			GetAllProductsBusinessScreen(navController = navController)
+//		}
+
 	}
 }

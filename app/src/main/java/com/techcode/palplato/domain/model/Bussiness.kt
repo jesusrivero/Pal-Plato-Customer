@@ -1,18 +1,20 @@
 package com.techcode.palplato.domain.model
 
 data class Business(
-	val businessId: String = "",
 	val ownerId: String = "",
 	val name: String = "",
 	val direction: String = "",
 	val phone: String = "",
 	val description: String = "",
 	val state: Boolean = true,
+	val businessId: String = "",
 	val products: List<String> = emptyList(),
 	val date: Long = System.currentTimeMillis(),
 	val logoUrl: String? = null,
+	val isOpen: Boolean = false, // ← lo llenaremos con el estado del negocio
 	val categories: List<Category> = emptyList(),
-	val schedule: List<BusinessSchedule> = emptyList() // 👈 NUEVO
+	val schedule: List<BusinessSchedule> = emptyList(),
+	val id: String = "" // ← lo llenaremos con doc.id
 )
 
 data class Category(
@@ -21,8 +23,10 @@ data class Category(
 )
 
 data class BusinessSchedule(
-	val day: String = "",             // Ej: "Lunes"
-	val openTime: String? = null,     // Ej: "09:00"
-	val closeTime: String? = null,    // Ej: "18:00"
-	val isOpen: Boolean = false       // true si el negocio abre este día
+	val day: String = "",
+	val openTime: String? = null,
+	val closeTime: String? = null,
+	val isOpen: Boolean = false
 )
+
+

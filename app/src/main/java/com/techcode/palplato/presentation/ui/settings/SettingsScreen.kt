@@ -1,6 +1,5 @@
 package com.techcode.palplato.presentation.ui.settings
 
-import android.util.Log
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -83,13 +82,6 @@ fun SettingsScreenContent(
 				iconRes = R.drawable.ic_person
 			) {
 				navController.navigate(AppRoutes.EditedProfileScreen)
-			},
-			SettingsItem(
-				title = "Negocio",
-				subtitle = "Actualiza el nombre, tipo de comida y dirección de tu negocio",
-				iconRes = R.drawable.ic_bussines
-			) {
-				navController.navigate(AppRoutes.EditedBussinessScreen)
 			},
 			SettingsItem(
 				title = "Seguridad",
