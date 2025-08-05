@@ -55,7 +55,7 @@ fun SettingsScreenContent(
 			CenterAlignedTopAppBar(
 				title = {
 					Text(
-						text = "Ajustes",
+						text = "Ajustesssssssssssss",
 						style = MaterialTheme.typography.titleMedium
 					)
 				},actions = {

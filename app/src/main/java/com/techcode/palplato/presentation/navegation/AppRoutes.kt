@@ -91,5 +91,9 @@ object AppRoutes {
 	data object AddressScreen
 	
 	
+	@Serializable
+	data object sdadawd
+	
+	
 	
 }
