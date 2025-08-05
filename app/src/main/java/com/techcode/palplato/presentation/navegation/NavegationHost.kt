@@ -16,12 +16,15 @@ import com.techcode.palplato.presentation.ui.auth.SplashScreen
 import com.techcode.palplato.presentation.ui.bussines.AllBusinessesScreen
 import com.techcode.palplato.presentation.ui.bussines.BusinessDetailScreen
 import com.techcode.palplato.presentation.ui.bussines.GetAllProductsBusinessScreen
+import com.techcode.palplato.presentation.ui.bussines.shopping.ShoppingScreen
+import com.techcode.palplato.presentation.ui.bussines.shopping.cartScreen
 import com.techcode.palplato.presentation.ui.order.OrderScreen
 import com.techcode.palplato.presentation.ui.reports.ReporstScreen
 import com.techcode.palplato.presentation.ui.main.MainScreen
 import com.techcode.palplato.presentation.ui.favorites.FavoriteScreen
 import com.techcode.palplato.presentation.ui.order.OrderDetailsScreen
 import com.techcode.palplato.presentation.ui.products.ProductsDetailScreenContent
+import com.techcode.palplato.presentation.ui.settings.AddressScreen
 import com.techcode.palplato.presentation.ui.settings.EditedEmailScreen
 import com.techcode.palplato.presentation.ui.settings.EditedNameScreen
 import com.techcode.palplato.presentation.ui.settings.EditedNotificationPreferencesScreen
@@ -91,8 +94,6 @@ fun NavegationHost(){
 		}
 		
 		
-	
-		
 		composable<AppRoutes.EditedProfileScreen> {
 			EditedProfileScreen(navController = navController)
 		}
@@ -120,6 +121,7 @@ fun NavegationHost(){
 		composable<AppRoutes.EditedNotificationPreferencesScreen> {
 			EditedNotificationPreferencesScreen(navController = navController)
 		}
+
 		
 		composable<AppRoutes.AllBusinessesScreen> {
 			AllBusinessesScreen(navController = navController)
@@ -148,10 +150,18 @@ fun NavegationHost(){
 				productId = args.productId
 			)
 		}
-//
-//		composable<AppRoutes.GetAllProductsBusinessScreen> {
-//			GetAllProductsBusinessScreen(navController = navController)
-//		}
+
+		composable<AppRoutes.cartScreen> {
+			cartScreen(navController = navController)
+		}
+		
+		composable<AppRoutes.ShoppingScreen> {
+			ShoppingScreen(navController = navController)
+		}
+		
+		composable<AppRoutes.AddressScreen> {
+			AddressScreen(navController = navController)
+		}
 
 	}
 }

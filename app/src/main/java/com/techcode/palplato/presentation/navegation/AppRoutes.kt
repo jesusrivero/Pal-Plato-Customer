@@ -80,7 +80,16 @@ object AppRoutes {
 	
 	@Serializable
 	data class ProductDetailScreen(val businessId: String, val productId: String)
-
+	
+ @Serializable
+	data object cartScreen
+	
+	@Serializable
+	data object ShoppingScreen
+	
+	@Serializable
+	data object AddressScreen
+	
 	
 	
 }

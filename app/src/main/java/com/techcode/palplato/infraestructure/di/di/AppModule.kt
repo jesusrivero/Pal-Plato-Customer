@@ -5,13 +5,11 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.techcode.palplato.data.repository.AuthRepositoryImpl
 import com.techcode.palplato.data.repository.BusinessRepositoryImpl
-import com.techcode.palplato.data.repository.DatesProductsHomeRepositoryImpl
 import com.techcode.palplato.data.repository.ProductRepositoryImpl
 import com.techcode.palplato.data.repository.UserRepositoryImpl
 import com.techcode.palplato.data.repository.local.SessionManager
 import com.techcode.palplato.domain.repository.AuthRepository
 import com.techcode.palplato.domain.repository.BusinessRepository
-import com.techcode.palplato.domain.repository.DatesProductsHomeRepository
 import com.techcode.palplato.domain.repository.ProductRepository
 import com.techcode.palplato.domain.repository.UserRepository
 import com.techcode.palplato.domain.usecase.auth.products.GetProductByIdUseCase
@@ -127,11 +125,6 @@ object AppModule {
 		userRepository: UserRepository
 	): UpdateUserPasswordUseCase = UpdateUserPasswordUseCase(userRepository)
 	
-	@Provides
-	@Singleton
-	fun provideDatesProductsHomeRepository(firestore: FirebaseFirestore): DatesProductsHomeRepository {
-		return DatesProductsHomeRepositoryImpl(firestore)
-	}
 	
 	@Provides
 	@Singleton

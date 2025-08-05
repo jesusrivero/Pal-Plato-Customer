@@ -120,7 +120,7 @@ fun GetAllProductsBusinessScreenContent(
 					}
 				},
 				actions = {
-					IconButton(onClick = { /* Carrito */ }) {
+					IconButton(onClick = { navController.navigate(AppRoutes.cartScreen) }) {
 						Icon(
 							painter = painterResource(id = com.techcode.palplato.R.drawable.ic_cart),
 							contentDescription = "Carrito",

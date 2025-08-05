@@ -67,6 +67,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.techcode.palplato.domain.model.Product
 import com.techcode.palplato.domain.viewmodels.auth.ProductViewModel
+import com.techcode.palplato.presentation.navegation.AppRoutes
 
 @Composable
 fun ProductDetailScreen(
@@ -123,7 +124,7 @@ fun ProductDetailUI(navController: NavController, product: Product) {
 					}
 				},
 				actions = {
-					IconButton(onClick = { /* Carrito */ }) {
+					IconButton(onClick = { navController.navigate(AppRoutes.cartScreen) }) {
 						Icon(
 							painter = painterResource(id = com.techcode.palplato.R.drawable.ic_cart),
 							contentDescription = "Carrito",
