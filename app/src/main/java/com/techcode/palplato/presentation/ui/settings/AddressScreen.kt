@@ -64,13 +64,13 @@ fun AddressScreenContent(navController: NavController) {
 			AddressItem(
 				id = 2,
 				title = "Trabajo",
-				address = "Carrera 15 #93-47, Oficina 302, Zona Rosa, Bogotá D.C.",
+				address = "Carrera 15 #93-45, Oficina 302, Zona Rosa, Bogotá D.C.",
 				isSelected = false
 			),
 			AddressItem(
 				id = 3,
 				title = "Casa de Mamá",
-				address = "Transversal 25 #18-32, Kennedy, Bogotá D.C.",
+				address = "Transversal 25 #18-32, Hola, Bogotá D.C.",
 				isSelected = false
 			)
 		)
