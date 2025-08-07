@@ -30,6 +30,7 @@ javapoet = "1.13.0" # Opcional si usas en otra parte
 navigationComposeVersion = "2.8.9"
 kotlinSerializationJson = "1.8.0"
 playServicesAuth = "21.4.0"
+roomRuntime = "2.7.2"
 threetenabp = "1.4.4"
 ui = "1.8.3"
 hilt = "2.51.1"
@@ -43,6 +44,9 @@ materialIconsExtended = "1.7.8"
 androidx-activity-compose-v190 = { module = "androidx.activity:activity-compose", version.ref = "activityComposeVersion" }
 androidx-hilt-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "hiltNavigationCompose" }
 androidx-lifecycle-viewmodel-compose-v280 = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
+androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomRuntime" }
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
 dagger = { module = "com.google.dagger:dagger", version.ref = "hiltAndroidVersion" }
 dagger-compiler = { module = "com.google.dagger:dagger-compiler", version.ref = "hiltAndroidVersion" }
 dagger-hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hiltAndroid" }

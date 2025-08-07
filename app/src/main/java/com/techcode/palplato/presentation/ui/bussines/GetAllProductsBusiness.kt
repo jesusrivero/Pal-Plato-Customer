@@ -1,6 +1,7 @@
 package com.techcode.palplato.presentation.ui.bussines
 
 import android.R
+import android.widget.Toast
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -27,6 +29,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -38,10 +41,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,13 +59,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.techcode.palplato.domain.model.Business
+import com.techcode.palplato.domain.model.CartItem
 import com.techcode.palplato.domain.model.Product
 import com.techcode.palplato.domain.viewmodels.auth.BusinessViewModel
+import com.techcode.palplato.domain.viewmodels.auth.CartViewModel
 import com.techcode.palplato.domain.viewmodels.auth.ProductViewModel
 import com.techcode.palplato.presentation.navegation.AppRoutes
 
@@ -68,6 +78,7 @@ fun GetAllProductsBusinessScreen(
 	businessId: String,
 	productsViewModel: ProductViewModel = hiltViewModel(),
 	businessViewModel: BusinessViewModel = hiltViewModel(),
+	cartViewModel: CartViewModel = hiltViewModel()
 ) {
 	val products by productsViewModel.products.collectAsState()
 	val business by businessViewModel.fetchBusinessById(businessId).collectAsState(initial = null)
@@ -89,8 +100,7 @@ fun GetAllProductsBusinessScreen(
 				navController = navController,
 				business = business!!,
 				products = products,
-				onMoreInfoClick = { /* Mostrar detalles o diálogo con dirección, teléfono y horarios */ },
-				onAddToCartClick = { product -> println("Producto agregado: ${product.name}") }
+				viewModel = cartViewModel
 			)
 		}
 	}
@@ -103,9 +113,14 @@ fun GetAllProductsBusinessScreenContent(
 	navController: NavController,
 	business: Business,
 	products: List<Product>,
-	onMoreInfoClick: () -> Unit,
-	onAddToCartClick: (Product) -> Unit,
+	viewModel: CartViewModel = hiltViewModel()
 ) {
+	val cartItems by viewModel.cartItems.collectAsState()
+	val cartCount = cartItems.sumOf { it.quantity }
+	val context = LocalContext.current
+	var showClearCartDialog by remember { mutableStateOf(false) }
+	var pendingProduct by remember { mutableStateOf<Product?>(null) }
+	
 	Scaffold(
 		topBar = {
 			CenterAlignedTopAppBar(
@@ -120,12 +135,31 @@ fun GetAllProductsBusinessScreenContent(
 					}
 				},
 				actions = {
-					IconButton(onClick = { navController.navigate(AppRoutes.cartScreen) }) {
-						Icon(
-							painter = painterResource(id = com.techcode.palplato.R.drawable.ic_cart),
-							contentDescription = "Carrito",
-							modifier = Modifier.size(24.dp)
-						)
+					Box {
+						IconButton(onClick = { navController.navigate(AppRoutes.cartScreen) }) {
+							Icon(
+								painter = painterResource(id = com.techcode.palplato.R.drawable.ic_cart),
+								contentDescription = "Carrito",
+								modifier = Modifier.size(24.dp)
+							)
+						}
+						if (cartCount > 0) {
+							Box(
+								modifier = Modifier
+									.align(Alignment.TopEnd)
+									.offset(x = 8.dp, y = (-4).dp)
+									.size(16.dp)
+									.background(MaterialTheme.colorScheme.primary, CircleShape),
+								contentAlignment = Alignment.Center
+							) {
+								Text(
+									text = cartCount.toString(),
+									color = Color.White,
+									fontSize = 10.sp,
+									fontWeight = FontWeight.Bold
+								)
+							}
+						}
 					}
 				}
 			)
@@ -138,10 +172,8 @@ fun GetAllProductsBusinessScreenContent(
 				.background(MaterialTheme.colorScheme.background)
 		) {
 			
-			BusinessHeader(
-				navController = navController,
-				business = business
-			)
+			BusinessHeader(navController = navController, business = business)
+			
 			if (products.isEmpty()) {
 				Box(
 					modifier = Modifier.fillMaxSize(),
@@ -166,7 +198,32 @@ fun GetAllProductsBusinessScreenContent(
 					items(products) { product ->
 						ProductItem(
 							product = product,
-							onAddClick = { onAddToCartClick(product) },
+							onAddClick = {
+								val currentBusinessId = cartItems.firstOrNull()?.businessId
+								if (currentBusinessId == null || currentBusinessId == business.id) {
+									val existingItem = cartItems.find { it.productId == product.id }
+									if (existingItem != null) {
+										// Si ya está en el carrito, incrementa la cantidad
+										viewModel.updateQuantity(product.id, existingItem.quantity + 1)
+									} else {
+										// Si no está, agrégalo al carrito
+										viewModel.addProduct(
+											CartItem(
+												productId = product.id,
+												productName = product.name,
+												price = product.price,
+												quantity = 1,
+												businessId = business.id,
+												imageUrl = product.imageUrl ?: "" // Evitar null
+											)
+										)
+									}
+								} else {
+									// Si es otro negocio, mostrar diálogo para limpiar carrito
+									pendingProduct = product
+									showClearCartDialog = true
+								}
+							},
 							onClick = {
 								navController.navigate(
 									AppRoutes.ProductDetailScreen(
@@ -178,11 +235,47 @@ fun GetAllProductsBusinessScreenContent(
 						)
 					}
 				}
-				
 			}
+		}
+		
+		// Diálogo de confirmación para limpiar carrito
+		if (showClearCartDialog) {
+			AlertDialog(
+				onDismissRequest = { showClearCartDialog = false },
+				title = { Text("Cambiar de negocio") },
+				text = { Text("Tu carrito contiene productos de otro negocio. ¿Deseas vaciar el carrito y agregar este producto?") },
+				confirmButton = {
+					TextButton(onClick = {
+						viewModel.clearCart()
+						pendingProduct?.let { product ->
+							viewModel.addProduct(
+								CartItem(
+									productId = product.id,
+									productName = product.name,
+									price = product.price,
+									quantity = 1,
+									businessId = business.id,
+									imageUrl = product.imageUrl ?: "" // Aseguramos que imageUrl no sea nulo
+								)
+							)
+						}
+						showClearCartDialog = false
+						pendingProduct = null
+					}) {
+						Text("Vaciar y agregar")
+					}
+				},
+				dismissButton = {
+					TextButton(onClick = { showClearCartDialog = false }) {
+						Text("Cancelar")
+					}
+				}
+			)
 		}
 	}
 }
+
+
 
 
 @Composable

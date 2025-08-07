@@ -11,12 +11,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -46,6 +48,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -65,7 +68,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.techcode.palplato.domain.model.CartItem
 import com.techcode.palplato.domain.model.Product
+import com.techcode.palplato.domain.viewmodels.auth.CartViewModel
 import com.techcode.palplato.domain.viewmodels.auth.ProductViewModel
 import com.techcode.palplato.presentation.navegation.AppRoutes
 
@@ -82,13 +87,13 @@ fun ProductDetailScreen(
 	)
 }
 
-
 @Composable
 fun ProductsDetailScreenContent(
 	navController: NavController,
 	businessId: String,
 	productId: String,
-	viewModel: ProductViewModel = hiltViewModel()
+	viewModel: ProductViewModel = hiltViewModel(),
+	cartViewModel: CartViewModel = hiltViewModel() // ✅ CartViewModel agregado
 ) {
 	val product by viewModel.getProductById(businessId, productId).collectAsState(initial = null)
 	
@@ -100,16 +105,35 @@ fun ProductsDetailScreenContent(
 			CircularProgressIndicator()
 		}
 	} else {
-		ProductDetailUI(navController, product!!)
+		ProductDetailUI(
+			navController = navController,
+			product = product!!,
+			cartViewModel = cartViewModel,
+			businessId = businessId
+		)
 	}
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProductDetailUI(navController: NavController, product: Product) {
-	var cantidad by remember { mutableStateOf(1) }
+fun ProductDetailUI(
+	navController: NavController,
+	product: Product,
+	businessId: String,
+	cartViewModel: CartViewModel
+) {
+
+	
+	val cartItems by cartViewModel.cartItems.collectAsState()
+	val cartItemCount = cartItems.sumOf { it.quantity } // ✅ total productos en carrito
+	// Buscar si este producto ya está en el carrito
+	val existingCartItem = cartItems.find { it.productId == product.id }
+	
+//	var cantidad by remember { mutableStateOf(existingCartItem?.quantity ?: 1) } // ✅ inicializar con cantidad existente
 	var notas by remember { mutableStateOf("") }
+	var cantidad by remember { mutableStateOf(1) }
 	val precioTotal = product.price * cantidad
+
 	
 	Scaffold(
 		topBar = {
@@ -124,12 +148,32 @@ fun ProductDetailUI(navController: NavController, product: Product) {
 					}
 				},
 				actions = {
-					IconButton(onClick = { navController.navigate(AppRoutes.cartScreen) }) {
-						Icon(
-							painter = painterResource(id = com.techcode.palplato.R.drawable.ic_cart),
-							contentDescription = "Carrito",
-							modifier = Modifier.size(24.dp)
-						)
+					Box {
+						IconButton(onClick = { navController.navigate(AppRoutes.cartScreen) }) {
+							Icon(
+								painter = painterResource(id = com.techcode.palplato.R.drawable.ic_cart),
+								contentDescription = "Carrito",
+								modifier = Modifier.size(24.dp)
+							)
+						}
+						
+						if (cartItemCount > 0) { // ✅ badge solo si hay productos
+							Box(
+								modifier = Modifier
+									.align(Alignment.TopEnd)
+									.offset(x = 6.dp, y = (-2).dp)
+									.size(18.dp)
+									.background(MaterialTheme.colorScheme.primary, CircleShape),
+								contentAlignment = Alignment.Center
+							) {
+								Text(
+									text = cartItemCount.toString(),
+									color = Color.White,
+									style = MaterialTheme.typography.labelSmall,
+									fontWeight = FontWeight.Bold
+								)
+							}
+						}
 					}
 				},
 				colors = TopAppBarDefaults.topAppBarColors(
@@ -166,7 +210,6 @@ fun ProductDetailUI(navController: NavController, product: Product) {
 					}
 					Spacer(modifier = Modifier.height(12.dp))
 					
-					// Dos botones en la misma fila
 					Row(
 						modifier = Modifier.fillMaxWidth(),
 						horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -174,10 +217,18 @@ fun ProductDetailUI(navController: NavController, product: Product) {
 						// Botón agregar al carrito
 						Button(
 							onClick = {
-								// TODO: Agregar al carrito con cantidad y notas
+								cartViewModel.addProduct(
+									CartItem(
+										productId = product.id,
+										productName = product.name,
+										price = product.price,
+										quantity = cantidad,
+										businessId = businessId, // ✅ obligatorio
+										imageUrl = product.imageUrl
+									)
+								)
 							},
-							modifier = Modifier
-								.weight(1f),
+							modifier = Modifier.weight(1f),
 							shape = RoundedCornerShape(16.dp),
 							enabled = product.available
 						) {
@@ -185,26 +236,28 @@ fun ProductDetailUI(navController: NavController, product: Product) {
 								verticalAlignment = Alignment.CenterVertically,
 								horizontalArrangement = Arrangement.Center
 							) {
-								Icon(
-									Icons.Default.ShoppingCart,
-									contentDescription = null,
-									modifier = Modifier.size(20.dp)
-								)
+								Icon(Icons.Default.ShoppingCart, contentDescription = null, modifier = Modifier.size(20.dp))
 								Spacer(modifier = Modifier.width(6.dp))
-								Text(
-									text = "Agregar",
-									style = MaterialTheme.typography.titleMedium
-								)
+								Text("Agregar", style = MaterialTheme.typography.titleMedium)
 							}
 						}
 						
 						// Botón comprar ahora
 						Button(
 							onClick = {
-								// TODO: Comprar directamente
+								cartViewModel.addProduct(
+									CartItem(
+										productId = product.id,
+										productName = product.name,
+										price = product.price,
+										quantity = cantidad,
+										businessId = businessId, // ✅ obligatorio
+										imageUrl = product.imageUrl
+									)
+								)
+								navController.navigate(AppRoutes.cartScreen)
 							},
-							modifier = Modifier
-								.weight(1f),
+							modifier = Modifier.weight(1f),
 							shape = RoundedCornerShape(16.dp),
 							enabled = product.available,
 							colors = ButtonDefaults.buttonColors(
@@ -216,23 +269,15 @@ fun ProductDetailUI(navController: NavController, product: Product) {
 								verticalAlignment = Alignment.CenterVertically,
 								horizontalArrangement = Arrangement.Center
 							) {
-								Icon(
-									Icons.Default.Payment,
-									contentDescription = null,
-									modifier = Modifier.size(20.dp)
-								)
+								Icon(Icons.Default.Payment, contentDescription = null, modifier = Modifier.size(20.dp))
 								Spacer(modifier = Modifier.width(6.dp))
-								Text(
-									text = "Comprar",
-									style = MaterialTheme.typography.titleMedium
-								)
+								Text("Comprar", style = MaterialTheme.typography.titleMedium)
 							}
 						}
 					}
 				}
 			}
 		}
-	
 	) { innerPadding ->
 		LazyColumn(
 			modifier = Modifier
@@ -522,6 +567,7 @@ fun ProductDetailUI(navController: NavController, product: Product) {
 		}
 	}
 }
+
 
 @Composable
 private fun InfoChip(

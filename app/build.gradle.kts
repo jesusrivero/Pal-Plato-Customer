@@ -6,6 +6,7 @@ plugins {
 	id("com.google.gms.google-services")
 	id("org.jetbrains.kotlin.plugin.compose")
 	id("kotlin-kapt")
+	
 }
 
 android {
@@ -67,6 +68,11 @@ dependencies {
 	implementation(libs.androidx.activity.compose.v190)
 	implementation(libs.androidx.lifecycle.viewmodel.compose)
 	implementation (libs.threetenabp)
+	
+	implementation (libs.androidx.room.runtime)
+	kapt (libs.androidx.room.compiler)
+	implementation (libs.androidx.room.ktx)
+	
 	
 	// Hilt - Configuración corregida
 	implementation(libs.hilt.android)

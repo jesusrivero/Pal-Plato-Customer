@@ -38,6 +38,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,8 +50,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.techcode.palplato.domain.viewmodels.auth.CartViewModel
 import com.techcode.palplato.presentation.navegation.AppRoutes
 
 @Composable
@@ -60,10 +63,13 @@ fun ShoppingScreen(navController: NavController) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CheckoutVerificationScreen(navController: NavController) {
-	val subtotal = 51.98
-	val deliveryFee = 5.00
-	val total = subtotal + deliveryFee
+fun CheckoutVerificationScreen(
+	navController: NavController,
+	viewModel: CartViewModel = hiltViewModel() // ⬅️ Inyectamos el ViewModel del carrito
+) {
+	val subtotal by viewModel.subtotal.collectAsState()
+	val deliveryFee by viewModel.deliveryCost.collectAsState()
+	val total by viewModel.total.collectAsState()
 	
 	var deliveryInstructions by remember { mutableStateOf("") }
 	var paymentProofUri by remember { mutableStateOf<Uri?>(null) }
@@ -162,6 +168,7 @@ fun CheckoutVerificationScreen(navController: NavController) {
 			
 			Spacer(modifier = Modifier.height(24.dp))
 			
+			// Resumen del pedido (Dinámico con el carrito)
 			OrderSummaryCard(
 				subtotal = subtotal,
 				deliveryFee = deliveryFee,
