@@ -270,27 +270,27 @@ fun MainScreenContent(
 //				}
 //			}
 			
-			// Entrega rápida (Mock existente)
-			item {
-				Column {
-					SectionHeader(
-						title = "Entrega Express",
-						subtitle = "Menos de 15 minutos",
-						icon = Icons.Default.FlashOn,
-						onSeeAllClick = { /* Ver todos */ }
-					)
-					LazyRow(
-						modifier = Modifier.fillMaxWidth(),
-						contentPadding = PaddingValues(horizontal = 16.dp),
-						horizontalArrangement = Arrangement.spacedBy(12.dp)
-					) {
-						items(negociosRapidos) { negocio ->
-							QuickServiceCard(negocio) { /* Navegación */ }
-						}
-					}
-				}
-			}
-			
+//			// Entrega rápida (Mock existente)
+//			item {
+//				Column {
+//					SectionHeader(
+//						title = "Entrega Express",
+//						subtitle = "Menos de 15 minutos",
+//						icon = Icons.Default.FlashOn,
+//						onSeeAllClick = { /* Ver todos */ }
+//					)
+//					LazyRow(
+//						modifier = Modifier.fillMaxWidth(),
+//						contentPadding = PaddingValues(horizontal = 16.dp),
+//						horizontalArrangement = Arrangement.spacedBy(12.dp)
+//					) {
+//						items(negociosRapidos) { negocio ->
+//							QuickServiceCard(negocio) { /* Navegación */ }
+//						}
+//					}
+//				}
+//			}
+//
 			// Platos populares (Mock existente)
 			item {
 				Column {

@@ -8,14 +8,25 @@ import com.google.firebase.storage.FirebaseStorage
 import com.techcode.palplato.data.repository.AuthRepositoryImpl
 import com.techcode.palplato.data.repository.BusinessRepositoryImpl
 import com.techcode.palplato.data.repository.CartRepositoryImpl
+import com.techcode.palplato.data.repository.FavoriteBusinessRepositoryImpl
+import com.techcode.palplato.data.repository.FavoriteProductRepositoryImpl
 import com.techcode.palplato.data.repository.ProductRepositoryImpl
 import com.techcode.palplato.data.repository.UserRepositoryImpl
 import com.techcode.palplato.data.repository.local.AppDatabase
 import com.techcode.palplato.data.repository.local.CartDao
+import com.techcode.palplato.data.repository.local.FavoriteBusinessDao
+import com.techcode.palplato.data.repository.local.FavoriteProductDao
 import com.techcode.palplato.data.repository.local.SessionManager
+import com.techcode.palplato.domain.usecase.auth.favorites.AddFavorite
+import com.techcode.palplato.domain.usecase.auth.favorites.FavoriteBusinessUseCases
+import com.techcode.palplato.domain.usecase.auth.favorites.GetFavorites
+import com.techcode.palplato.domain.usecase.auth.favorites.IsFavorite
+import com.techcode.palplato.domain.usecase.auth.favorites.RemoveFavorite
 import com.techcode.palplato.domain.repository.AuthRepository
 import com.techcode.palplato.domain.repository.BusinessRepository
 import com.techcode.palplato.domain.repository.CartRepository
+import com.techcode.palplato.domain.repository.FavoriteBusinessRepository
+import com.techcode.palplato.domain.repository.FavoriteProductRepository
 import com.techcode.palplato.domain.repository.ProductRepository
 import com.techcode.palplato.domain.repository.UserRepository
 import com.techcode.palplato.domain.usecase.auth.products.GetProductByIdUseCase
@@ -31,6 +42,11 @@ import com.techcode.palplato.domain.usecase.auth.cart.GetCartItems
 import com.techcode.palplato.domain.usecase.auth.cart.RemoveCartItem
 import com.techcode.palplato.domain.usecase.auth.cart.RemoveFromCart
 import com.techcode.palplato.domain.usecase.auth.cart.UpdateCartQuantity
+import com.techcode.palplato.domain.usecase.auth.favorites.AddFavoriteProductUseCase
+import com.techcode.palplato.domain.usecase.auth.favorites.FavoriteProductUseCases
+import com.techcode.palplato.domain.usecase.auth.favorites.GetFavoriteProductsUseCase
+import com.techcode.palplato.domain.usecase.auth.favorites.IsFavoriteProductUseCase
+import com.techcode.palplato.domain.usecase.auth.favorites.RemoveFavoriteProductUseCase
 import com.techcode.palplato.domain.usecase.auth.updateprofiledates.ReauthenticateUserUseCase
 import com.techcode.palplato.domain.usecase.auth.updateprofiledates.UpdateUserEmailUseCase
 import com.techcode.palplato.domain.usecase.auth.updateprofiledates.UpdateUserPasswordUseCase
@@ -166,7 +182,7 @@ object AppModule {
 			AppDatabase::class.java,
 			"app_database"
 		)
-			.fallbackToDestructiveMigration() // ← Esto elimina y recrea la BD si el esquema cambió
+			.fallbackToDestructiveMigration()
 			.build()
 	}
 	
@@ -194,4 +210,51 @@ object AppModule {
 			removeItem = RemoveCartItem(repository)
 		)
 	}
+	@Provides
+	@Singleton
+	fun provideFavoriteBusinessDao(db: AppDatabase): FavoriteBusinessDao = db.favoriteBusinessDao()
+	
+	@Provides
+	@Singleton
+	fun provideFavoriteBusinessRepository(dao: FavoriteBusinessDao): FavoriteBusinessRepository =
+		FavoriteBusinessRepositoryImpl(dao)
+	
+	@Provides
+	@Singleton
+	fun provideFavoriteBusinessUseCases(repository: FavoriteBusinessRepository): FavoriteBusinessUseCases {
+		return FavoriteBusinessUseCases(
+			addFavorite = AddFavorite(repository),
+			removeFavorite = RemoveFavorite(repository),
+			getFavorites = GetFavorites(repository),
+			isFavorite = IsFavorite(repository)
+		)
+	}
+	// ------------------ FAVORITE PRODUCTS ---------------------
+	
+	@Provides
+	@Singleton
+	fun provideFavoriteProductDao(db: AppDatabase): FavoriteProductDao = db.favoriteProductDao()
+	
+	@Provides
+	@Singleton
+	fun provideFavoriteProductRepository(
+		dao: FavoriteProductDao
+	): FavoriteProductRepository = FavoriteProductRepositoryImpl(dao)
+	
+	@Provides
+	@Singleton
+	fun provideFavoriteProductUseCases(
+		addFavoriteProduct: AddFavoriteProductUseCase,
+		removeFavoriteProduct: RemoveFavoriteProductUseCase,
+		getFavoriteProducts: GetFavoriteProductsUseCase,
+		isFavoriteProduct: IsFavoriteProductUseCase
+	): FavoriteProductUseCases {
+		return FavoriteProductUseCases(
+			addFavoriteProduct,
+			removeFavoriteProduct,
+			getFavoriteProducts,
+			isFavoriteProduct
+		)
+	}
+	
 }

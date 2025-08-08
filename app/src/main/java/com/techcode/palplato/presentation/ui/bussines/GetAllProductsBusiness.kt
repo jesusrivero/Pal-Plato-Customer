@@ -26,6 +26,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Phone
@@ -64,11 +66,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.techcode.palplato.domain.helpers.toFavoriteProduct
 import com.techcode.palplato.domain.model.Business
 import com.techcode.palplato.domain.model.CartItem
 import com.techcode.palplato.domain.model.Product
 import com.techcode.palplato.domain.viewmodels.auth.BusinessViewModel
 import com.techcode.palplato.domain.viewmodels.auth.CartViewModel
+import com.techcode.palplato.domain.viewmodels.auth.FavoriteProductViewModel
 import com.techcode.palplato.domain.viewmodels.auth.ProductViewModel
 import com.techcode.palplato.presentation.navegation.AppRoutes
 
@@ -100,7 +104,7 @@ fun GetAllProductsBusinessScreen(
 				navController = navController,
 				business = business!!,
 				products = products,
-				viewModel = cartViewModel
+				cartViewModel = cartViewModel
 			)
 		}
 	}
@@ -113,13 +117,23 @@ fun GetAllProductsBusinessScreenContent(
 	navController: NavController,
 	business: Business,
 	products: List<Product>,
-	viewModel: CartViewModel = hiltViewModel()
+	cartViewModel: CartViewModel = hiltViewModel(),
+	favoriteViewModel: FavoriteProductViewModel = hiltViewModel()
 ) {
-	val cartItems by viewModel.cartItems.collectAsState()
+	val cartItems by cartViewModel.cartItems.collectAsState()
 	val cartCount = cartItems.sumOf { it.quantity }
+	
+	val favorites by favoriteViewModel.favorites.collectAsState()
+	// Usamos Set para consulta rápida
+	val favoriteIds = remember(favorites) { favorites.map { it.id }.toSet() }
+	
 	val context = LocalContext.current
 	var showClearCartDialog by remember { mutableStateOf(false) }
 	var pendingProduct by remember { mutableStateOf<Product?>(null) }
+	
+	LaunchedEffect(Unit) {
+		favoriteViewModel.loadFavorites() // Carga inicial de favoritos
+	}
 	
 	Scaffold(
 		topBar = {
@@ -171,7 +185,6 @@ fun GetAllProductsBusinessScreenContent(
 				.fillMaxSize()
 				.background(MaterialTheme.colorScheme.background)
 		) {
-			
 			BusinessHeader(navController = navController, business = business)
 			
 			if (products.isEmpty()) {
@@ -196,32 +209,38 @@ fun GetAllProductsBusinessScreenContent(
 					horizontalArrangement = Arrangement.spacedBy(12.dp)
 				) {
 					items(products) { product ->
+						
 						ProductItem(
 							product = product,
+							isFavorite = favoriteIds.contains(product.id),
 							onAddClick = {
 								val currentBusinessId = cartItems.firstOrNull()?.businessId
 								if (currentBusinessId == null || currentBusinessId == business.id) {
 									val existingItem = cartItems.find { it.productId == product.id }
 									if (existingItem != null) {
-										// Si ya está en el carrito, incrementa la cantidad
-										viewModel.updateQuantity(product.id, existingItem.quantity + 1)
+										cartViewModel.updateQuantity(product.id, existingItem.quantity + 1)
 									} else {
-										// Si no está, agrégalo al carrito
-										viewModel.addProduct(
+										cartViewModel.addProduct(
 											CartItem(
 												productId = product.id,
 												productName = product.name,
 												price = product.price,
 												quantity = 1,
 												businessId = business.id,
-												imageUrl = product.imageUrl ?: "" // Evitar null
+												imageUrl = product.imageUrl ?: ""
 											)
 										)
 									}
 								} else {
-									// Si es otro negocio, mostrar diálogo para limpiar carrito
 									pendingProduct = product
 									showClearCartDialog = true
+								}
+							},
+							onFavoriteClick = {
+								if (favoriteIds.contains(product.id)) {
+									favoriteViewModel.removeFavorite(product.toFavoriteProduct())
+								} else {
+									favoriteViewModel.addFavorite(product.toFavoriteProduct())
 								}
 							},
 							onClick = {
@@ -238,7 +257,6 @@ fun GetAllProductsBusinessScreenContent(
 			}
 		}
 		
-		// Diálogo de confirmación para limpiar carrito
 		if (showClearCartDialog) {
 			AlertDialog(
 				onDismissRequest = { showClearCartDialog = false },
@@ -246,16 +264,16 @@ fun GetAllProductsBusinessScreenContent(
 				text = { Text("Tu carrito contiene productos de otro negocio. ¿Deseas vaciar el carrito y agregar este producto?") },
 				confirmButton = {
 					TextButton(onClick = {
-						viewModel.clearCart()
+						cartViewModel.clearCart()
 						pendingProduct?.let { product ->
-							viewModel.addProduct(
+							cartViewModel.addProduct(
 								CartItem(
 									productId = product.id,
 									productName = product.name,
 									price = product.price,
 									quantity = 1,
 									businessId = business.id,
-									imageUrl = product.imageUrl ?: "" // Aseguramos que imageUrl no sea nulo
+									imageUrl = product.imageUrl ?: ""
 								)
 							)
 						}
@@ -275,6 +293,91 @@ fun GetAllProductsBusinessScreenContent(
 	}
 }
 
+
+@Composable
+fun ProductItem(
+	product: Product,
+	isFavorite: Boolean,
+	onAddClick: () -> Unit,
+	onFavoriteClick: () -> Unit,
+	onClick: () -> Unit,
+) {
+	Card(
+		modifier = Modifier
+			.fillMaxWidth()
+			.aspectRatio(0.8f)
+			.clickable { onClick() },
+		shape = RoundedCornerShape(12.dp),
+		elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+	) {
+		Column(
+			modifier = Modifier.fillMaxSize()
+		) {
+			Box(modifier = Modifier.fillMaxWidth()) {
+				AsyncImage(
+					model = product.imageUrl,
+					contentDescription = product.name,
+					contentScale = ContentScale.Crop,
+					modifier = Modifier
+						.height(120.dp)
+						.fillMaxWidth()
+				)
+				IconButton(
+					onClick = onAddClick,
+					modifier = Modifier
+						.align(Alignment.TopEnd)
+						.padding(6.dp)
+						.size(28.dp)
+						.background(
+							color = MaterialTheme.colorScheme.primary,
+							shape = CircleShape
+						)
+				) {
+					Icon(
+						painter = painterResource(id = com.techcode.palplato.R.drawable.ic_add),
+						contentDescription = "Agregar",
+						tint = Color.White,
+						modifier = Modifier.size(16.dp)
+					)
+				}
+				
+				IconButton(
+					onClick = onFavoriteClick,
+					modifier = Modifier
+						.align(Alignment.TopStart)
+						.padding(6.dp)
+						.size(28.dp)
+						.background(
+							color = if (isFavorite) Color.Red else Color.Gray.copy(alpha = 0.6f),
+							shape = CircleShape
+						)
+				) {
+					Icon(
+						imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+						contentDescription = if (isFavorite) "Quitar de favoritos" else "Agregar a favoritos",
+						tint = if (isFavorite) Color.Red else Color.White
+					)
+				}
+			}
+			
+			Column(modifier = Modifier.padding(8.dp)) {
+				Text(
+					text = product.name,
+					style = MaterialTheme.typography.bodyMedium,
+					fontWeight = FontWeight.Medium,
+					maxLines = 1,
+					overflow = TextOverflow.Ellipsis
+				)
+				Text(
+					text = "$${product.price}",
+					style = MaterialTheme.typography.bodyLarge,
+					fontWeight = FontWeight.Bold,
+					color = MaterialTheme.colorScheme.primary
+				)
+			}
+		}
+	}
+}
 
 
 
@@ -458,70 +561,6 @@ fun BusinessHeader(
 }
 
 
-@Composable
-fun ProductItem(
-	product: Product,
-	onAddClick: () -> Unit,
-	onClick: () -> Unit,
-) {
-	Card(
-		modifier = Modifier
-			.fillMaxWidth()
-			.aspectRatio(0.8f)
-			.clickable { onClick() }, // Aquí navegamos al detalle
-		shape = RoundedCornerShape(12.dp),
-		elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-	) {
-		Column(
-			modifier = Modifier.fillMaxSize()
-		) {
-			Box(modifier = Modifier.fillMaxWidth()) {
-				AsyncImage(
-					model = product.imageUrl,
-					contentDescription = product.name,
-					contentScale = ContentScale.Crop,
-					modifier = Modifier
-						.height(120.dp)
-						.fillMaxWidth()
-				)
-				IconButton(
-					onClick = onAddClick,
-					modifier = Modifier
-						.align(Alignment.TopEnd)
-						.padding(6.dp)
-						.size(28.dp)
-						.background(
-							color = MaterialTheme.colorScheme.primary,
-							shape = CircleShape
-						)
-				) {
-					Icon(
-						painter = painterResource(id = com.techcode.palplato.R.drawable.ic_add),
-						contentDescription = "Agregar",
-						tint = Color.White,
-						modifier = Modifier.size(16.dp)
-					)
-				}
-			}
-			
-			Column(modifier = Modifier.padding(8.dp)) {
-				Text(
-					text = product.name,
-					style = MaterialTheme.typography.bodyMedium,
-					fontWeight = FontWeight.Medium,
-					maxLines = 1,
-					overflow = TextOverflow.Ellipsis
-				)
-				Text(
-					text = "$${product.price}",
-					style = MaterialTheme.typography.bodyLarge,
-					fontWeight = FontWeight.Bold,
-					color = MaterialTheme.colorScheme.primary
-				)
-			}
-		}
-	}
-}
 
 
 

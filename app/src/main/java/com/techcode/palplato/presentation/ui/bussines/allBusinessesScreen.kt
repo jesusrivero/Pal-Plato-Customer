@@ -20,12 +20,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Inventory
 import androidx.compose.material.icons.filled.LocationOn
@@ -45,26 +48,29 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.techcode.palplato.data.repository.local.FavoriteBusinessDao
+import com.techcode.palplato.data.repository.local.FavoriteBusinessEntity
 import com.techcode.palplato.domain.model.Business
-import com.techcode.palplato.domain.viewmodels.auth.BusinessViewModel
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.style.TextAlign
 import com.techcode.palplato.domain.model.BusinessSchedule
+import com.techcode.palplato.domain.viewmodels.auth.BusinessViewModel
+import com.techcode.palplato.domain.viewmodels.auth.FavoriteBusinessViewModel
 import com.techcode.palplato.presentation.navegation.AppRoutes
 import java.text.Normalizer
 import java.text.SimpleDateFormat
@@ -75,7 +81,7 @@ import java.util.Locale
 @Composable
 fun AllBusinessesScreen(navController: NavController) {
 	
-	AllBusinessesScreenContent(	navController = navController)
+	AllBusinessesScreenContent(navController = navController)
 }
 
 
@@ -84,9 +90,11 @@ fun AllBusinessesScreen(navController: NavController) {
 @Composable
 fun AllBusinessesScreenContent(
 	navController: NavController,
-	viewModel: BusinessViewModel = hiltViewModel()
+	viewModel: BusinessViewModel = hiltViewModel(),
+	favViewModel: FavoriteBusinessViewModel = hiltViewModel()
 ) {
 	val businesses by viewModel.businesses.collectAsState()
+	val favorites by favViewModel.favorites.collectAsState()
 	
 	Scaffold(
 		topBar = {
@@ -135,13 +143,11 @@ fun AllBusinessesScreenContent(
 				.fillMaxSize()
 				.background(MaterialTheme.colorScheme.background)
 		) {
-			// Header con estadísticas
 			if (businesses.isNotEmpty()) {
 				BusinessStatsHeader(businesses = businesses)
 			}
 			
 			if (businesses.isEmpty()) {
-				// Estado vacío mejorado
 				EmptyBusinessesState()
 			} else {
 				LazyColumn(
@@ -150,12 +156,21 @@ fun AllBusinessesScreenContent(
 					verticalArrangement = Arrangement.spacedBy(16.dp)
 				) {
 					items(businesses) { business ->
-						EnhancedBusinessListItem(business) {
-							navController.navigate(AppRoutes.GetAllProductsBusinessScreen(business.id))
-						}
+						val isFavorite = favorites.any { it.businessId == business.id }
+						
+						EnhancedBusinessListItem(
+							business = business,
+							isFavorite = isFavorite,
+							onClick = {
+								navController.navigate(
+									AppRoutes.GetAllProductsBusinessScreen(business.id)
+								)
+							},
+							onFavoriteClick = {
+								favViewModel.toggleFavorite(business)
+							}
+						)
 					}
-					
-					// Espaciado al final
 					item {
 						Spacer(modifier = Modifier.height(16.dp))
 					}
@@ -164,6 +179,8 @@ fun AllBusinessesScreenContent(
 		}
 	}
 }
+
+
 
 
 @Composable
@@ -229,7 +246,7 @@ fun StatItem(
 	value: String,
 	label: String,
 	icon: ImageVector,
-	color: Color = MaterialTheme.colorScheme.onPrimaryContainer
+	color: Color = MaterialTheme.colorScheme.onPrimaryContainer,
 ) {
 	Column(
 		horizontalAlignment = Alignment.CenterHorizontally
@@ -292,7 +309,9 @@ fun EmptyBusinessesState() {
 @Composable
 fun EnhancedBusinessListItem(
 	business: Business,
-	onClick: () -> Unit
+	isFavorite: Boolean,
+	onClick: () -> Unit,
+	onFavoriteClick: () -> Unit,
 ) {
 	val todaySchedule = remember(business) {
 		val today = SimpleDateFormat("EEEE", Locale.getDefault()).format(Date()).lowercase()
@@ -310,7 +329,6 @@ fun EnhancedBusinessListItem(
 		)
 	) {
 		Column {
-			// Header con imagen y estado
 			Box(
 				modifier = Modifier
 					.fillMaxWidth()
@@ -327,21 +345,26 @@ fun EnhancedBusinessListItem(
 					error = painterResource(id = android.R.drawable.ic_menu_gallery)
 				)
 				
-				// Overlay gradient
-				Box(
+				// Botón de favorito (con estado desde ViewModel)
+				IconButton(
+					onClick = onFavoriteClick,
 					modifier = Modifier
-						.fillMaxSize()
+						.align(Alignment.TopStart)
+						.padding(8.dp)
+						.size(32.dp)
 						.background(
-							Brush.verticalGradient(
-								colors = listOf(
-									Color.Transparent,
-									Color.Black.copy(alpha = 0.7f)
-								)
-							)
+							color = Color.Black.copy(alpha = 0.4f),
+							shape = CircleShape
 						)
-				)
+				) {
+					Icon(
+						imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+						contentDescription = if (isFavorite) "Quitar de favoritos" else "Agregar a favoritos",
+						tint = if (isFavorite) Color.Red else Color.White
+					)
+				}
 				
-				// Estado del negocio (usamos directamente isOpen del documento principal)
+				// Estado del negocio
 				Card(
 					modifier = Modifier
 						.padding(12.dp)
@@ -371,7 +394,7 @@ fun EnhancedBusinessListItem(
 					}
 				}
 				
-				// Nombre del negocio
+				// Nombre del negocio sobre la imagen
 				Text(
 					text = business.name,
 					style = MaterialTheme.typography.titleLarge,
@@ -385,11 +408,8 @@ fun EnhancedBusinessListItem(
 				)
 			}
 			
-			// Contenido del card
-			Column(
-				modifier = Modifier.padding(16.dp)
-			) {
-				// Descripción
+			// Resto del contenido...
+			Column(modifier = Modifier.padding(16.dp)) {
 				if (business.description.isNotEmpty()) {
 					Text(
 						text = business.description,
@@ -401,11 +421,7 @@ fun EnhancedBusinessListItem(
 					Spacer(modifier = Modifier.height(12.dp))
 				}
 				
-				// Información de contacto y ubicación
-				Row(
-					modifier = Modifier.fillMaxWidth(),
-					verticalAlignment = Alignment.CenterVertically
-				) {
+				Row(verticalAlignment = Alignment.CenterVertically) {
 					Icon(
 						imageVector = Icons.Default.LocationOn,
 						contentDescription = null,
@@ -425,9 +441,7 @@ fun EnhancedBusinessListItem(
 				
 				if (business.phone.isNotEmpty()) {
 					Spacer(modifier = Modifier.height(4.dp))
-					Row(
-						verticalAlignment = Alignment.CenterVertically
-					) {
+					Row(verticalAlignment = Alignment.CenterVertically) {
 						Icon(
 							imageVector = Icons.Default.Phone,
 							contentDescription = null,
@@ -443,12 +457,9 @@ fun EnhancedBusinessListItem(
 					}
 				}
 				
-				// Horario de hoy
 				todaySchedule?.let { schedule ->
 					Spacer(modifier = Modifier.height(4.dp))
-					Row(
-						verticalAlignment = Alignment.CenterVertically
-					) {
+					Row(verticalAlignment = Alignment.CenterVertically) {
 						Icon(
 							imageVector = Icons.Default.AccessTime,
 							contentDescription = null,
@@ -464,72 +475,6 @@ fun EnhancedBusinessListItem(
 							},
 							style = MaterialTheme.typography.bodySmall,
 							color = MaterialTheme.colorScheme.onSurfaceVariant
-						)
-					}
-				}
-				
-				// Categorías
-				if (business.categories.isNotEmpty()) {
-					Spacer(modifier = Modifier.height(12.dp))
-					LazyRow(
-						horizontalArrangement = Arrangement.spacedBy(8.dp)
-					) {
-						items(business.categories.take(3)) { category ->
-							Card(
-								colors = CardDefaults.cardColors(
-									containerColor = MaterialTheme.colorScheme.primaryContainer
-								),
-								shape = RoundedCornerShape(20.dp)
-							) {
-								Text(
-									text = category.name,
-									style = MaterialTheme.typography.labelSmall,
-									color = MaterialTheme.colorScheme.onPrimaryContainer,
-									modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-									fontWeight = FontWeight.Medium
-								)
-							}
-						}
-						
-						if (business.categories.size > 3) {
-							item {
-								Card(
-									colors = CardDefaults.cardColors(
-										containerColor = MaterialTheme.colorScheme.secondaryContainer
-									),
-									shape = RoundedCornerShape(20.dp)
-								) {
-									Text(
-										text = "+${business.categories.size - 3}",
-										style = MaterialTheme.typography.labelSmall,
-										color = MaterialTheme.colorScheme.onSecondaryContainer,
-										modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-										fontWeight = FontWeight.Medium
-									)
-								}
-							}
-						}
-					}
-				}
-				
-				// Productos disponibles
-				if (business.products.isNotEmpty()) {
-					Spacer(modifier = Modifier.height(8.dp))
-					Row(
-						verticalAlignment = Alignment.CenterVertically
-					) {
-						Icon(
-							imageVector = Icons.Default.Inventory,
-							contentDescription = null,
-							modifier = Modifier.size(16.dp),
-							tint = MaterialTheme.colorScheme.primary
-						)
-						Spacer(modifier = Modifier.width(4.dp))
-						Text(
-							text = "${business.products.size} productos disponibles",
-							style = MaterialTheme.typography.bodySmall,
-							color = MaterialTheme.colorScheme.onSurfaceVariant,
-							fontWeight = FontWeight.Medium
 						)
 					}
 				}
@@ -554,7 +499,10 @@ fun getBusinessStatus(schedule: List<BusinessSchedule>): BusinessStatus {
 		return BusinessStatus.CLOSED
 	}
 	
-	Log.d("BusinessStatus", "Evaluando horarios: ${todaySchedule.openTime} - ${todaySchedule.closeTime}")
+	Log.d(
+		"BusinessStatus",
+		"Evaluando horarios: ${todaySchedule.openTime} - ${todaySchedule.closeTime}"
+	)
 	
 	val format = SimpleDateFormat("HH:mm", Locale.getDefault())
 	val now = Date()
@@ -570,22 +518,23 @@ fun getBusinessStatus(schedule: List<BusinessSchedule>): BusinessStatus {
 			Log.d("BusinessStatus", "Cerrado (antes de abrir)")
 			BusinessStatus.CLOSED
 		}
+		
 		now.after(closeTime) -> {
 			Log.d("BusinessStatus", "Cerrado (después de cerrar)")
 			BusinessStatus.CLOSED
 		}
+		
 		closeTime.time - now.time <= 30 * 60 * 1000 -> {
 			Log.d("BusinessStatus", "Cierra pronto")
 			BusinessStatus.CLOSING_SOON
 		}
+		
 		else -> {
 			Log.d("BusinessStatus", "Abierto")
 			BusinessStatus.OPEN
 		}
 	}
 }
-
-
 
 
 fun normalizeDay(day: String): String {
